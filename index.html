@@ -3,27 +3,59 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>솔라메멘토 — 앱 안내</title>
+<title>솔라메멘토 SOLAMEMENTO</title>
+<meta name="description" content="솔라메멘토는 일상의 기록을 돕는 모바일 앱을 만듭니다.">
 <style>
-  body { font-family: -apple-system, "Malgun Gothic", sans-serif; background: #FAF6EE; color: #1F2937; max-width: 720px; margin: 0 auto; padding: 48px 20px 64px; line-height: 1.7; }
-  h1 { color: #1D559C; font-size: 1.5rem; border-bottom: 2px solid #1D559C; padding-bottom: 12px; }
-  .app { background: #fff; border: 1px solid #E5DFD2; border-radius: 12px; padding: 20px 24px; margin-top: 24px; }
-  .app h2 { color: #1D559C; font-size: 1.1rem; margin: 0 0 8px; }
-  .app p { margin: 0 0 12px; color: #4B5563; }
-  a { color: #1D559C; }
-  footer { margin-top: 48px; color: #6B7280; font-size: 0.9rem; }
+  :root { --navy: #1D559C; --cream: #FAF6EE; --ink: #1F2937; --sub: #5B6472; --line: #E5DFD2; }
+  * { box-sizing: border-box; }
+  body { font-family: -apple-system, "Malgun Gothic", sans-serif; background: var(--cream); color: var(--ink); margin: 0; line-height: 1.7; }
+  .wrap { max-width: 760px; margin: 0 auto; padding: 0 20px 72px; }
+  header { padding: 64px 0 40px; border-bottom: 1px solid var(--line); }
+  .brand { font-size: 1.8rem; font-weight: 700; color: var(--navy); letter-spacing: -0.5px; margin: 0; }
+  .brand small { display: block; font-size: 0.85rem; font-weight: 500; color: var(--sub); letter-spacing: 2px; margin-top: 6px; }
+  .lead { margin: 20px 0 0; font-size: 1.05rem; color: var(--sub); }
+  h2 { font-size: 1.15rem; color: var(--navy); margin: 48px 0 16px; }
+  .app { background: #fff; border: 1px solid var(--line); border-radius: 14px; padding: 22px 26px; }
+  .app h3 { margin: 0 0 6px; font-size: 1.05rem; color: var(--ink); }
+  .app p { margin: 0 0 14px; color: var(--sub); }
+  .links a { display: inline-block; margin-right: 18px; color: var(--navy); font-size: 0.92rem; }
+  dl { display: grid; grid-template-columns: 130px 1fr; gap: 10px 16px; margin: 0; font-size: 0.95rem; }
+  dt { color: var(--sub); }
+  dd { margin: 0; }
+  footer { margin-top: 56px; padding-top: 20px; border-top: 1px solid var(--line); color: var(--sub); font-size: 0.88rem; }
+  a { color: var(--navy); }
+  @media (max-width: 520px) { dl { grid-template-columns: 1fr; gap: 2px 0; } dt { margin-top: 10px; } }
 </style>
 </head>
 <body>
-<h1>솔라메멘토 앱 안내</h1>
-<p>솔라메멘토에서 만든 앱들의 안내 및 정책 페이지입니다.</p>
+<div class="wrap">
 
+<header>
+  <h1 class="brand">솔라메멘토<small>SOLAMEMENTO</small></h1>
+  <p class="lead">기억해 두어야 할 것들을 잘 정리해 두도록 돕는 모바일 앱을 만듭니다.</p>
+</header>
+
+<h2>앱</h2>
 <div class="app">
-  <h2>만일의 노트</h2>
-  <p>만일의 순간을 대비해 가족이 알아야 할 정보를 기기에 정리해 두는 기록장.</p>
-  <a href="manilnote/privacy.html">개인정보처리방침</a>
+  <h3>만일의 노트</h3>
+  <p>갑작스러운 사고나 부재 — 만일의 상황에서 가족이 알아야 할 정보를 미리 한곳에 정리해 두는 기록장입니다. 모든 기록은 서버 없이 사용자의 기기에만 저장됩니다.</p>
+  <div class="links">
+    <a href="manilnote/privacy.html">개인정보처리방침</a>
+  </div>
 </div>
 
-<footer>문의: <a href="mailto:sola.memento@gmail.com">sola.memento@gmail.com</a></footer>
+<h2>사업자 정보</h2>
+<dl>
+  <dt>상호</dt><dd>솔라메멘토 (SOLAMEMENTO)</dd>
+  <dt>대표자</dt><dd>노수진</dd>
+  <dt>사업자등록번호</dt><dd>174-48-00768</dd>
+  <dt>문의</dt><dd><a href="mailto:contact@solamemento.com">contact@solamemento.com</a></dd>
+</dl>
+
+<footer>
+  © 2026 SOLAMEMENTO. All rights reserved.
+</footer>
+
+</div>
 </body>
 </html>
