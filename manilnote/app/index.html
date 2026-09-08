@@ -1,0 +1,1722 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>만일의 노트 — 우리 가족 안심 기록장</title>
+<meta name="theme-color" content="#F8F4EB" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#201E19" media="(prefers-color-scheme: dark)">
+<!-- 웹(PWA)용: 아이폰 사파리 '홈 화면에 추가' 시 전체화면 앱처럼 실행된다. 안드로이드 앱에서는 무해. -->
+<link rel="manifest" href="manifest.webmanifest">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="만일의 노트">
+<link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+<link rel="icon" type="image/png" sizes="192x192" href="icons/icon-192.png">
+<link rel="stylesheet" href="fonts/pretendard.css">
+<link rel="stylesheet" href="fonts/gowun-batang/400.css">
+<link rel="stylesheet" href="fonts/gowun-batang/700.css">
+<style>
+:root{
+  --bg:#F8F4EB; --bg2:#FFFDF8; --card:#FFFDF8; --ink:#37322A; --ink2:#6E6555; --ink3:#A89C82;
+  --line:#E7DFCE; --accent:#1D559C; --accent2:#EAF1F9; --accent3:#C9D9EC;
+  --warn:#A96444; --warnbg:#F7EDE4; --focus:#5A85C0; --danger:#B05B4C;
+  --chip:#F2EBDB; --gold:#E3A24A; --serif:'Gowun Batang','Apple SD Gothic Neo',serif;
+  --shadow:0 1px 3px rgba(90,80,60,.08), 0 4px 14px rgba(90,80,60,.06);
+  --radius:14px;
+}
+body.dark{
+  --bg:#201E19; --bg2:#282521; --card:#2C2924; --ink:#E8E2D6; --ink2:#B0A897; --ink3:#7D766A;
+  --line:#443F37; --accent:#8FB4E3; --accent2:#26313F; --accent3:#3D5878;
+  --warn:#D99A6C; --warnbg:#3D332B; --focus:#5C8FD6; --danger:#CF8273;
+  --chip:#33302A; --gold:#D9A45B;
+  --shadow:0 1px 3px rgba(0,0,0,.3), 0 4px 14px rgba(0,0,0,.2);
+}
+*{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:'Pretendard Variable',Pretendard,'Apple SD Gothic Neo',"Malgun Gothic",sans-serif;font-size:15px;line-height:1.55;transition:background .25s,color .25s}
+button{font-family:inherit;cursor:pointer}
+input,select,textarea{font-family:inherit;font-size:14px;color:var(--ink);background:var(--bg2);border:1px solid var(--line);border-radius:9px;padding:8px 10px;width:100%;transition:border .15s, box-shadow .15s}
+input:focus,select:focus,textarea:focus{outline:none;border-color:var(--focus);box-shadow:0 0 0 3px color-mix(in srgb,var(--focus) 20%,transparent)}
+textarea{min-height:84px;resize:vertical;line-height:1.6}
+::placeholder{color:var(--ink3)}
+.wrap{max-width:880px;margin:0 auto;padding:0 16px 90px}
+/* header */
+.top{position:sticky;top:0;z-index:30;background:color-mix(in srgb,var(--bg) 88%,transparent);backdrop-filter:blur(8px);border-bottom:1px solid var(--line)}
+.top-in{max-width:880px;margin:0 auto;padding:10px 16px;display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.brand{display:flex;align-items:center;gap:8px;margin-right:auto;cursor:pointer;user-select:none}
+.brand svg{flex:none}
+.brand b{font-size:18px;font-family:var(--serif);color:var(--accent)}
+.brand span{font-size:12px;color:var(--ink2)}
+.tbtn{border:1px solid var(--line);background:var(--card);color:var(--ink);border-radius:999px;padding:7px 13px;font-size:12.5px;display:inline-flex;align-items:center;gap:6px;box-shadow:var(--shadow)}
+.tbtn:hover{border-color:var(--accent3)}
+.tbtn.primary{background:var(--accent);border-color:var(--accent);color:#fff}
+.savebadge{font-size:11.5px;color:var(--ink3);min-width:86px;text-align:right}
+/* home */
+.hero{background:var(--card);border:1.5px solid var(--accent);border-radius:18px;padding:6px;margin:20px 0 18px;box-shadow:var(--shadow)}
+.hero-in{border:1px dashed var(--accent3);border-radius:13px;padding:20px 18px}
+.hero h1{margin:0 0 8px;font-size:22px;font-family:var(--serif);color:var(--accent);line-height:1.45}
+.hero p{margin:4px 0;color:var(--ink2);font-size:13.5px}
+.owner-line{display:flex;align-items:center;gap:8px;margin-top:16px;flex-wrap:wrap}
+.owner-line span{font-size:14px;color:var(--ink2)}
+.owner-line input{width:180px;background:var(--card)}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:12px}
+.scard{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);padding:16px;display:flex;gap:12px;align-items:center;cursor:pointer;box-shadow:var(--shadow);transition:transform .12s, border-color .12s}
+.scard:hover{transform:translateY(-2px);border-color:var(--accent3)}
+.scard .ic{width:44px;height:44px;display:flex;align-items:center;justify-content:center;background:var(--chip);color:var(--accent);border-radius:12px;flex:none}
+.scard .tt{font-weight:700;font-size:15px}
+.scard .st{font-size:12px;color:var(--ink3);margin-top:2px}
+.scard .st b{color:var(--accent);font-weight:700}
+/* section view */
+.crumb{display:flex;align-items:center;gap:10px;margin:18px 0 4px}
+.crumb button{border:1px solid var(--line);background:var(--card);border-radius:999px;padding:6px 14px;font-size:13px}
+.sec-head{display:flex;align-items:center;gap:12px;margin:10px 0 2px}
+.sec-head .ic{display:flex;align-items:center;justify-content:center;width:44px;height:44px;background:var(--chip);color:var(--accent);border-radius:12px}
+.sec-head h2{margin:0;font-size:22px;font-family:var(--serif);color:var(--accent)}
+.chips{display:flex;gap:7px;flex-wrap:wrap;margin:12px 0 18px}
+.chips a{font-size:12px;color:var(--ink2);border:1px solid var(--line);background:var(--card);border-radius:999px;padding:5px 11px;text-decoration:none}
+.chips a:hover{border-color:var(--accent3);color:var(--ink)}
+.pagecard{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);margin:0 0 16px;box-shadow:var(--shadow);overflow:hidden}
+.pagecard>summary{list-style:none;cursor:pointer;padding:15px 18px;display:flex;align-items:center;gap:10px;user-select:none}
+.pagecard>summary::-webkit-details-marker{display:none}
+.pagecard>summary .arr{margin-left:auto;color:var(--ink3);transition:transform .15s;flex:none}
+.pagecard[open]>summary .arr{transform:rotate(90deg)}
+.pagecard>summary h3{margin:0;font-size:16px;font-family:var(--serif)}
+.pagecard>summary .cnt{font-size:11.5px;color:var(--accent);background:var(--accent2);border-radius:999px;padding:2px 9px;flex:none}
+.pbody{padding:2px 18px 18px}
+.pnote{font-size:13px;color:var(--ink2);background:var(--accent2);border-radius:10px;padding:10px 13px;margin:4px 0 14px}
+.gtitle{font-size:13.5px;font-weight:700;color:var(--accent);margin:18px 0 8px;padding-bottom:5px;border-bottom:1px dashed var(--line);display:flex;align-items:center;gap:7px}
+.gnote{font-size:12.5px;color:var(--ink2);margin:-2px 0 10px}
+.frow{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:10px 12px}
+.fld{display:flex;flex-direction:column;gap:4px;min-width:0}
+.fld.wide{grid-column:1/-1}
+.fld label{font-size:12px;color:var(--ink2);display:flex;align-items:center;gap:5px}
+.fld .hint{font-size:11.5px;color:var(--ink3)}
+.lock{font-size:11px}
+body.hide-sens .fld.sens input:not(:focus),body.hide-sens .sens-cell input:not(:focus){-webkit-text-security:disc}
+.optwrap{display:flex;gap:8px;flex-wrap:wrap;padding:3px 0}
+.optwrap label.opt{display:inline-flex;align-items:center;gap:6px;font-size:13.5px;color:var(--ink);border:1px solid var(--line);background:var(--bg2);border-radius:999px;padding:6px 12px;cursor:pointer}
+.optwrap label.opt:has(input:checked){background:var(--accent2);border-color:var(--accent);color:var(--ink)}
+.optwrap input{width:auto;accent-color:var(--accent)}
+/* tables */
+.twrap{overflow-x:auto;border:1px solid var(--line);border-radius:10px}
+table.g{border-collapse:collapse;width:100%;min-width:520px}
+table.g th{background:var(--accent2);color:var(--ink2);font-size:12px;font-weight:700;text-align:left;padding:8px 10px;border-bottom:1px solid var(--line);white-space:nowrap}
+table.g td{border-bottom:1px solid var(--line);padding:3px;vertical-align:middle}
+table.g tr:last-child td{border-bottom:none}
+table.g td input{border:none;background:transparent;border-radius:6px;padding:7px 8px}
+table.g td input:focus{background:var(--bg2);box-shadow:0 0 0 2px var(--focus) inset}
+table.g td.preset{font-size:13px;padding:8px 10px;color:var(--ink);white-space:nowrap}
+.addrow{margin-top:8px;border:1px dashed var(--line);background:transparent;color:var(--ink2);border-radius:9px;padding:7px 14px;font-size:12.5px;width:100%}
+.addrow:hover{border-color:var(--accent);color:var(--accent)}
+/* repeat instances */
+.inst{border:1px solid var(--line);border-radius:12px;padding:14px 15px 16px;margin:0 0 12px;background:var(--bg2)}
+.inst-head{display:flex;align-items:center;gap:9px;margin-bottom:4px}
+.inst-head .no{font-size:11.5px;font-weight:700;color:var(--accent);background:var(--accent2);border-radius:999px;padding:2px 9px}
+.inst-head b{font-size:14.5px}
+.inst-head button{margin-left:auto;border:none;background:transparent;color:var(--ink3);font-size:12px;padding:4px 6px;border-radius:7px}
+.inst-head button:hover{color:var(--danger);background:var(--warnbg)}
+/* modal */
+.overlay{position:fixed;inset:0;background:rgba(40,35,25,.45);display:flex;align-items:center;justify-content:center;z-index:60;padding:18px}
+.modal{background:var(--card);border:1px solid var(--line);border-radius:18px;max-width:430px;width:100%;padding:24px;box-shadow:0 18px 50px rgba(0,0,0,.3)}
+.modal h3{margin:0 0 8px;font-size:18px;font-family:var(--serif);color:var(--accent)}
+.modal p{font-size:13.5px;color:var(--ink2);margin:6px 0}
+.modal .btns{display:flex;flex-direction:column;gap:9px;margin-top:16px}
+.bigbtn{border:1px solid var(--line);background:var(--bg2);color:var(--ink);border-radius:12px;padding:13px 16px;font-size:14.5px;text-align:left}
+.bigbtn b{display:block}
+.bigbtn small{color:var(--ink2)}
+.bigbtn:hover{border-color:var(--accent)}
+.modal .close{margin-top:12px;width:100%;border:none;background:transparent;color:var(--ink3);padding:8px;font-size:13px}
+.toast{position:fixed;left:50%;bottom:26px;transform:translateX(-50%);background:var(--ink);color:var(--bg);padding:10px 20px;border-radius:999px;font-size:13.5px;z-index:70;box-shadow:var(--shadow);opacity:0;transition:opacity .25s;pointer-events:none;max-width:88vw;text-align:center}
+.toast.show{opacity:1}
+.foot{margin:34px 0 10px;text-align:center;color:var(--ink3);font-size:12px;line-height:1.8}
+/* android safe area (status bar / gesture bar) */
+.top{padding-top:max(env(safe-area-inset-top,0px),var(--safe-area-inset-top,0px))}
+.wrap{padding-bottom:calc(90px + max(env(safe-area-inset-bottom,0px),var(--safe-area-inset-bottom,0px)))}
+#lock{padding-top:max(env(safe-area-inset-top,0px),var(--safe-area-inset-top,0px))}
+.overlay{padding-top:calc(18px + max(env(safe-area-inset-top,0px),var(--safe-area-inset-top,0px)));padding-bottom:calc(18px + max(env(safe-area-inset-bottom,0px),var(--safe-area-inset-bottom,0px)));align-items:flex-start;overflow-y:auto}
+.overlay .modal{margin:auto}
+/* alert/confirm 대체 대화상자.
+   z-index가 잠금화면(100)보다 높아야 한다 — 잠금화면 위에서 부르는 확인들이 기존
+   .overlay(60)를 쓰면 잠금 뒤에 가려 렌더되어, 사용자는 앱이 멈춘 것처럼 느낀다. */
+.askov{position:fixed;inset:0;background:rgba(40,35,25,.5);display:flex;align-items:flex-start;justify-content:center;z-index:200;padding:18px;
+  padding-top:calc(18px + max(env(safe-area-inset-top,0px),var(--safe-area-inset-top,0px)));
+  padding-bottom:calc(18px + max(env(safe-area-inset-bottom,0px),var(--safe-area-inset-bottom,0px)));overflow-y:auto}
+.askov .modal{margin:auto;max-width:390px}
+.askmsg{white-space:pre-line;font-size:14px;line-height:1.7;color:var(--ink2);margin:4px 0 0}
+.askbtns{display:flex;gap:9px;margin-top:18px}
+.askbtns button{flex:1;border-radius:12px;padding:12px 14px;font-size:14.5px;font-weight:700;border:1px solid var(--line)}
+.askok{background:var(--accent);color:#fff;border-color:var(--accent)}
+.askok.danger{background:var(--danger);border-color:var(--danger)}
+.askcancel{background:var(--bg2);color:var(--ink2)}
+/* emergency card */
+/* v1.3.0 리뉴얼은 그라디언트를 걷어내고 플랫 + 테두리로 갔다. 하드코딩 hex 대신 --warn/--warnbg 토큰을
+   쓰므로 다크 모드 별도 규칙이 필요 없다. */
+.emcard{background:var(--warnbg);border:1.5px solid var(--warn);border-radius:var(--radius);padding:16px 18px;margin:0 0 14px;box-shadow:var(--shadow)}
+.emcard h3{margin:0 0 2px;font-size:16px;font-family:var(--serif);display:flex;align-items:center;gap:8px}
+.emcard .sub{font-size:12.5px;color:var(--ink2);margin:0 0 12px}
+/* search */
+.searchwrap{position:relative;margin:0 0 16px}
+.searchwrap .sicon{position:absolute;left:16px;top:23px;transform:translateY(-50%);color:var(--ink3);display:flex;pointer-events:none}
+.searchwrap input{padding:11px 14px 11px 41px;border-radius:999px;font-size:14.5px;background:var(--card);box-shadow:var(--shadow)}
+.sres{background:var(--card);border:1px solid var(--line);border-radius:12px;margin-top:6px;box-shadow:var(--shadow);overflow:hidden;max-height:340px;overflow-y:auto}
+.sres .ri{padding:10px 14px;border-bottom:1px solid var(--line);cursor:pointer;font-size:13px}
+.sres .ri:last-child{border-bottom:none}
+.sres .ri:hover{background:var(--accent2)}
+.sres .ri .path{color:var(--accent);font-weight:700;font-size:12px}
+.sres .ri .val{color:var(--ink2);margin-top:2px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+/* lock screen */
+#lock{position:fixed;inset:0;background:var(--bg);z-index:100;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:14px;padding:20px}
+#lock .box{background:var(--card);border:1px solid var(--line);border-radius:20px;padding:30px 26px;max-width:320px;width:100%;text-align:center;box-shadow:var(--shadow)}
+#lock h2{margin:0 0 6px;font-size:20px;font-family:var(--serif);color:var(--accent)}
+#lock p{color:var(--ink2);font-size:13px;margin:0 0 16px}
+#lock input{text-align:center;font-size:22px;letter-spacing:8px;padding:10px}
+#lock .err{color:var(--danger);font-size:12.5px;min-height:18px;margin-top:8px}
+#lock button.open{width:100%;margin-top:10px;background:var(--accent);color:#fff;border:none;border-radius:10px;padding:12px;font-size:15px}
+#lock button.forgot{background:none;border:none;color:var(--ink3);font-size:12px;margin-top:10px}
+/* settings & ai modals */
+.set-sec{border:1px solid var(--line);border-radius:12px;padding:14px 15px;margin:12px 0;background:var(--bg2)}
+.set-sec h4{margin:0 0 8px;font-size:14.5px;font-family:var(--serif);color:var(--accent)}
+.set-sec p{font-size:12.5px;color:var(--ink2);margin:6px 0}
+.set-sec input,.set-sec select{margin:5px 0}
+.set-sec .btnrow{display:flex;gap:8px;margin-top:9px;flex-wrap:wrap}
+.set-sec .btnrow button{flex:1;border:1px solid var(--line);background:var(--card);color:var(--ink);border-radius:9px;padding:9px 10px;font-size:13px}
+.set-sec .btnrow button.primary{background:var(--accent);border-color:var(--accent);color:#fff}
+.aihelp{margin-top:6px;border:1px dashed var(--accent3);background:var(--accent2);color:var(--accent);border-radius:9px;padding:6px 12px;font-size:12.5px;align-self:flex-start}
+.aihelp:hover{border-style:solid}
+/* photo fill */
+.photofill{margin:2px 0 10px;border:1px dashed var(--accent3);background:var(--accent2);color:var(--accent);border-radius:9px;padding:7px 14px;font-size:12.5px;display:inline-flex;align-items:center;gap:6px}
+.photofill:hover{border-style:solid}
+.pf-thumbs{display:flex;gap:10px;flex-wrap:wrap;margin:8px 0}
+.pf-th{position:relative}
+.pf-th img{width:74px;height:74px;object-fit:cover;border-radius:8px;border:1px solid var(--line);display:block}
+.pf-x{position:absolute;top:-7px;right:-7px;width:21px;height:21px;border-radius:50%;background:var(--ink2);color:#fff;font-size:11px;line-height:21px;text-align:center;border:none;padding:0}
+.pf-row{display:flex;gap:8px;align-items:flex-start;padding:7px 0;border-bottom:1px solid var(--line)}
+.pf-row input[type=checkbox]{margin-top:5px;flex:none}
+.pf-lab{font-size:12px;color:var(--ink2);width:104px;flex:none;padding-top:4px;word-break:keep-all}
+.pf-val{flex:1;min-width:0}
+.pf-val input,.pf-val textarea{width:100%}
+.pf-old{font-size:11.5px;color:var(--warn);margin-top:2px}
+.pf-gt{font-weight:700;font-size:12.5px;margin-top:12px;color:var(--ink2)}
+/* chat */
+.chatbox{display:flex;flex-direction:column;height:min(70vh,540px)}
+.chatlog{flex:1;overflow-y:auto;padding:6px 2px;display:flex;flex-direction:column;gap:10px}
+.bub{max-width:85%;padding:9px 13px;border-radius:14px;font-size:13.5px;line-height:1.6;white-space:pre-wrap;word-break:break-word}
+.bub.u{align-self:flex-end;background:var(--accent);color:#fff;border-bottom-right-radius:4px}
+.bub.a{align-self:flex-start;background:var(--accent2);color:var(--ink);border-bottom-left-radius:4px}
+.bub.load{color:var(--ink3);font-style:italic}
+.chatin{display:flex;gap:8px;margin-top:10px}
+.chatin textarea{min-height:78px;height:78px;flex:1}
+.chatin button{border:none;background:var(--accent);color:#fff;border-radius:10px;padding:0 18px;font-size:14px;flex:none}
+.disc{font-size:11.5px;color:var(--ink3);margin-top:8px;text-align:center}
+.modal.wide{max-width:560px}
+.modal textarea{margin:6px 0}
+.modal label.mlab{font-size:12.5px;color:var(--ink2);display:block;margin-top:10px}
+.modal .mrow{display:flex;gap:8px}
+.modal .mrow>*{flex:1}
+@media(max-width:560px){
+  .frow{grid-template-columns:1fr}
+  .brand span{display:none}
+  .savebadge{display:none}
+}
+@media print{.top,.chips,.addrow,.photofill,.foot{display:none}}
+</style>
+</head>
+<body>
+<div class="top"><div class="top-in">
+  <div class="brand" id="brandHome"><svg width="22" height="22" viewBox="0 0 72 72"><polygon points="60,14 10,36 33,44" fill="#2565B4"></polygon><polygon points="60,14 33,44 40,60" fill="#1D559C"></polygon><polygon points="60,14 33,44 33,52 38,46" fill="#16437C"></polygon></svg><b>만일의 노트</b><span>우리 가족 안심 기록장</span></div>
+  <span class="savebadge" id="saveBadge"></span>
+  <button class="tbtn" id="btnChat" title="장례·상속·행정 절차를 물어보는 AI 도우미">AI 도우미</button>
+  <button class="tbtn" id="btnSet" title="문서·백업, 화면, 앱 잠금, AI 설정">설정</button>
+  <input type="file" id="fileRestore" accept=".json" style="display:none">
+</div></div>
+<div class="wrap" id="app"></div>
+<div class="toast" id="toast"></div>
+
+<script>
+'use strict';
+const SCHEMA = [{"id":"personal","title":"인적사항","icon":"👤","pages":[{"id":"adult-profile","title":"성인 기본 정보","note":"가족 중 어른 한 명당 한 장씩 작성해 두세요. 만일의 상황에서 가족이 나를 대신해 일을 처리할 때 꼭 필요한 정보들이에요.","repeat":true,"addLabel":"+ 사람 추가","cardLabel":"이름","groups":[{"title":"기본 정보","fields":[{"id":"name","label":"이름","type":"text"},{"id":"gender","label":"성별","type":"select","options":["남성","여성"]},{"id":"birthdate","label":"생년월일","type":"date"},{"id":"resident-id","label":"주민등록번호","type":"text","sensitive":true,"hint":"노트 분실에 대비해 뒷자리는 일부만 적거나 보관 위치만 적어두는 것을 권장해요."},{"id":"birthplace","label":"출생지","type":"text"},{"id":"address","label":"주소","type":"text","wide":true},{"id":"drivers-license","label":"운전면허번호","type":"text","sensitive":true},{"id":"passport-no","label":"여권번호","type":"text","sensitive":true,"hint":"여권 만료일도 함께 적어두면 좋아요."},{"id":"religion","label":"종교","type":"text"},{"id":"marital-status","label":"혼인 여부","type":"radio","options":["기혼","미혼","기타"]},{"id":"spouse-name","label":"배우자 이름","type":"text","showIf":{"field":"marital-status","equals":["기혼"]}},{"id":"father-name","label":"아버지 성함","type":"text"},{"id":"mother-name","label":"어머니 성함","type":"text"}]},{"title":"연락처","fields":[{"id":"mobile-phone","label":"휴대폰","type":"text"},{"id":"home-phone","label":"집 전화","type":"text"},{"id":"email","label":"이메일","type":"text"}]},{"title":"직장 정보","fields":[{"id":"company","label":"회사명","type":"text"},{"id":"department","label":"부서","type":"text"},{"id":"job-title","label":"직급·직책","type":"text"},{"id":"work-phone","label":"직장 전화","type":"text"},{"id":"work-address","label":"직장 주소","type":"text","wide":true}]},{"title":"신체 정보","fields":[{"id":"blood-type","label":"혈액형","type":"select","options":["A형","B형","O형","AB형","모름"],"hint":"Rh- 등 특이 혈액형은 신체 특징란에 함께 적어주세요."},{"id":"height","label":"키","type":"text"},{"id":"weight","label":"몸무게","type":"text"},{"id":"body-marks","label":"신체 특징","type":"textarea","wide":true,"hint":"흉터, 점, 문신 등 나를 알아볼 수 있는 특징을 적어두세요."}]},{"title":"건강 메모","note":"자세한 의료 정보는 '의료 정보' 섹션에 정리할 수 있어요. 여기에는 핵심만 간단히 적어두세요.","fields":[{"id":"primary-hospital","label":"주치의·자주 가는 병원","type":"text"},{"id":"hospital-phone","label":"병원 연락처","type":"text"},{"id":"allergies","label":"알레르기","type":"text","wide":true},{"id":"medications","label":"복용 중인 약","type":"text","wide":true},{"id":"conditions","label":"지병·건강 특이사항","type":"text","wide":true}]},{"title":"추가 메모","fields":[{"id":"extra-notes","label":"메모","type":"textarea","wide":true}]}]},{"id":"child-profile","title":"자녀 기본 정보","note":"자녀 한 명당 한 장씩 작성해 두세요. 내가 자리를 비웠을 때 아이를 돌봐줄 사람에게 꼭 필요한 정보예요.","repeat":true,"addLabel":"+ 자녀 추가","cardLabel":"이름","groups":[{"title":"기본 정보","fields":[{"id":"name","label":"이름","type":"text"},{"id":"gender","label":"성별","type":"select","options":["남성","여성"]},{"id":"birthdate","label":"생년월일","type":"date"},{"id":"resident-id","label":"주민등록번호","type":"text","sensitive":true,"hint":"노트 분실에 대비해 뒷자리는 일부만 적어두는 것을 권장해요."},{"id":"address","label":"주소","type":"text","wide":true},{"id":"blood-type","label":"혈액형","type":"select","options":["A형","B형","O형","AB형","모름"]},{"id":"height","label":"키","type":"text"},{"id":"weight","label":"몸무게","type":"text"},{"id":"body-marks","label":"신체 특징","type":"text","wide":true,"hint":"점, 흉터 등 아이를 알아볼 수 있는 특징을 적어두세요."}]},{"title":"교육기관 정보","fields":[{"id":"school-type","label":"기관 구분","type":"select","options":["어린이집","유치원","초등학교","중학교","고등학교","기타"]},{"id":"school-name","label":"기관·학교 이름","type":"text"},{"id":"grade-class","label":"학년·반","type":"text"},{"id":"teacher","label":"담임 선생님","type":"text"},{"id":"school-phone","label":"기관 전화번호","type":"text"},{"id":"school-address","label":"기관 주소","type":"text","wide":true}]},{"title":"등·하원과 돌봄","fields":[{"id":"commute-method","label":"등·하원(교) 방법","type":"text","wide":true,"hint":"예: 유치원 버스(8:40 승차), 도보 등하교, 할머니 픽업"},{"id":"pickup-person","label":"하원 시 데리러 가는 사람","type":"text"},{"id":"care-teacher","label":"돌봄 선생님 이름","type":"text"},{"id":"care-teacher-phone","label":"돌봄 선생님 연락처","type":"text"},{"id":"after-school","label":"하원·방과 후 일정","type":"text","wide":true,"hint":"예: 월·수 태권도(4시), 금 피아노 학원"}]},{"title":"안전 정보","fields":[{"id":"family-codeword","label":"가족 암호","type":"text","sensitive":true,"hint":"낯선 사람을 구별하기 위해 아이와 정한 암호예요. 암호 자체보다는 힌트를 적어두는 것도 좋아요."},{"id":"allowed-pickup","label":"아이를 인계해도 되는 사람","type":"text","wide":true,"hint":"이름과 관계, 연락처를 함께 적어두세요."}]},{"title":"건강 정보","fields":[{"id":"pediatric-clinic","label":"다니는 소아과·병원","type":"text"},{"id":"clinic-phone","label":"병원 연락처","type":"text"},{"id":"allergies","label":"알레르기","type":"text","wide":true},{"id":"medications","label":"복용 중인 약","type":"text","wide":true},{"id":"health-notes","label":"건강 특이사항","type":"text","wide":true}]},{"title":"추가 메모","fields":[{"id":"extra-notes","label":"메모","type":"textarea","wide":true}]}],"showIfAny":{"page":"adult-profile","field":"marital-status","equals":["기혼"]}},{"id":"pet-profile","title":"반려동물 정보","note":"반려동물 한 마리당 한 장씩 작성해 두세요. 내가 돌볼 수 없을 때 아이를 맡아줄 사람에게 큰 도움이 돼요.","repeat":true,"addLabel":"+ 반려동물 추가","cardLabel":"이름","groups":[{"title":"기본 정보","fields":[{"id":"name","label":"이름","type":"text"},{"id":"species","label":"종류","type":"text","hint":"예: 강아지, 고양이, 햄스터"},{"id":"breed","label":"품종","type":"text"},{"id":"gender","label":"성별","type":"select","options":["수컷","암컷","모름"]},{"id":"birthdate","label":"생년월일(추정)","type":"text","hint":"정확한 날짜를 모르면 추정 나이를 적어주세요."},{"id":"animal-reg-no","label":"동물등록번호","type":"text","hint":"내장칩·외장칩 등록번호를 적어주세요."},{"id":"adoption-source","label":"분양처·입양처","type":"text"}]},{"title":"건강 정보","fields":[{"id":"vet-clinic","label":"다니는 동물병원","type":"text"},{"id":"vet-phone","label":"동물병원 연락처","type":"text"},{"id":"vet-address","label":"동물병원 주소","type":"text","wide":true},{"id":"neutered","label":"중성화 여부","type":"radio","options":["예","아니요","모름"]},{"id":"conditions","label":"지병·알레르기","type":"text","wide":true},{"id":"medications","label":"복용 중인 약","type":"text","wide":true},{"id":"weight","label":"몸무게","type":"text"},{"id":"appearance","label":"털 색·외형 특징","type":"text"}]},{"title":"돌봄 정보","fields":[{"id":"food","label":"사료 종류·브랜드","type":"text","wide":true},{"id":"feeding","label":"급여 시간과 양","type":"text","wide":true,"hint":"예: 아침 7시·저녁 7시, 한 번에 반 컵"},{"id":"likes","label":"좋아하는 것","type":"text"},{"id":"dislikes","label":"싫어하는 것·주의할 점","type":"text"},{"id":"walk-habits","label":"산책 습관","type":"text","wide":true,"hint":"예: 하루 2회, 아침·저녁 30분씩, 리드줄 필수"},{"id":"routine","label":"수면·생활 습관","type":"text","wide":true},{"id":"commands","label":"알아듣는 말·훈련된 명령어","type":"text","wide":true},{"id":"sitter-name","label":"맡아줄 사람","type":"text"},{"id":"sitter-phone","label":"맡아줄 사람 연락처","type":"text"}]},{"title":"추가 메모","fields":[{"id":"extra-notes","label":"메모","type":"textarea","wide":true}]}]},{"id":"family-members","title":"가족·친척 연락처","note":"가족과 가까운 친척의 연락처를 한 명씩 정리해 두세요. 급한 일이 생겼을 때 서로 연락이 닿기 쉬워져요.","repeat":true,"addLabel":"+ 가족 추가","cardLabel":"이름","groups":[{"title":"연락처 정보","fields":[{"id":"name","label":"이름","type":"text"},{"id":"relation","label":"관계","type":"select","options":["배우자","자녀","아버지","어머니","형제자매","조부모","손주","삼촌·고모·이모","사촌","기타"]},{"id":"mobile-phone","label":"휴대폰","type":"text"},{"id":"home-phone","label":"집 전화","type":"text"},{"id":"email","label":"이메일","type":"text"},{"id":"birthdate","label":"생년월일","type":"date"},{"id":"address","label":"주소","type":"text","wide":true},{"id":"notes","label":"메모","type":"text","wide":true}]}]},{"id":"my-family","title":"우리 가족","note":"우리 가족을 한눈에 볼 수 있게 정리하는 페이지예요. 함께 사는 가족을 중심으로 적어두세요.","groups":[{"title":"가족 구성","table":{"columns":["이름","관계","생년월일","연락처","메모"],"rows":6},"id":"t0"},{"title":"가족 기념일과 연락 방법","fields":[{"id":"wedding-anniversary","label":"결혼기념일","type":"date"},{"id":"family-events","label":"가족 기념일","type":"textarea","wide":true,"hint":"생일, 제사, 어른들 칠순·팔순 등 챙겨야 할 날을 적어두세요."},{"id":"first-contact","label":"비상시 가장 먼저 연락할 가족","type":"text"},{"id":"family-channel","label":"가족 단체 연락 수단","type":"text","hint":"예: 카카오톡 가족 단체방 이름"}]}]}]},{"id":"medical","title":"의료 정보","icon":"🏥","pages":[{"id":"medical-profile","title":"의료 프로필","note":"가족 한 사람당 한 장씩 작성해 두세요. 응급 상황에서 의료진이 가장 먼저 확인하는 정보들이에요.","repeat":true,"addLabel":"+ 사람 추가","cardLabel":"이름","groups":[{"title":"기본 정보","fields":[{"id":"name","label":"이름","type":"text"},{"id":"birthdate","label":"생년월일","type":"date"},{"id":"blood-type","label":"혈액형","type":"select","options":["A형","B형","O형","AB형","모름"]},{"id":"primary-doctor","label":"주치의·자주 가는 병원","type":"text"},{"id":"primary-doctor-phone","label":"병원 연락처","type":"text"}]},{"title":"현재 건강 상태","fields":[{"id":"conditions","label":"앓고 있는 질환","type":"textarea","wide":true},{"id":"current-meds","label":"복용 중인 약·영양제","type":"textarea","wide":true,"hint":"자세한 목록은 '복용약 기록' 페이지에 정리할 수 있어요."}]},{"title":"응급 시 의료진에게 알릴 것","note":"의식이 없을 때 의료진이 꼭 알아야 하는 내용이에요. 휴대폰 잠금화면의 '의료 정보(응급 정보)'에도 함께 등록해 두면 좋아요.","fields":[{"id":"allergies","label":"알레르기","type":"text","wide":true,"hint":"약물, 음식, 조영제 등 알레르기 반응이 있었던 것을 모두 적어주세요."},{"id":"surgeries","label":"수술 이력","type":"textarea","wide":true,"hint":"수술명과 대략적인 시기를 적어주세요."},{"id":"implants","label":"임플란트·보철·삽입 기기","type":"text","wide":true,"hint":"예: 심박동기, 스텐트, 인공관절, 치아 임플란트"},{"id":"emergency-notes","label":"그 밖에 알릴 것","type":"textarea","wide":true}]},{"title":"큰 병·입원·수술 이력","table":{"columns":["시기","질환·내용","병원","담당 의사"],"rows":4},"id":"t3"}]},{"id":"health-history","title":"나의 병력","note":"지금까지 앓았거나 앓고 있는 질환을 체크해 두세요. 진료받을 때 문진표를 빠르게 작성하는 데도 도움이 돼요.","repeat":true,"addLabel":"+ 사람 추가","cardLabel":"이름","groups":[{"title":"대상","fields":[{"id":"name","label":"이름","type":"text"}]},{"title":"질환 체크리스트","fields":[{"id":"conditions","label":"해당되는 질환","type":"checks","wide":true,"options":["고혈압","당뇨병","고지혈증(이상지질혈증)","심장 질환(협심증·심근경색 등)","부정맥","뇌졸중(중풍)","암(부위는 아래 메모에)","천식","폐 질환(COPD 등)","알레르기 비염","아토피·피부 질환","편두통","우울증","불안장애","공황장애","불면증","치매","파킨슨병","뇌전증","골다공증","관절염","허리·목 디스크","갑상선 질환","위염·위궤양","역류성 식도염","장 질환(과민성 대장 등)","간 질환(지방간·간염 등)","신장(콩팥) 질환","전립선 질환","통풍","빈혈","백내장·녹내장","난청·이명","수면무호흡증"]},{"id":"other-conditions","label":"기타 질환","type":"textarea","wide":true,"hint":"목록에 없는 질환이나 암 부위, 진단 시기 등을 적어주세요."},{"id":"notes","label":"메모","type":"textarea","wide":true}]}]},{"id":"family-history","title":"가족 병력","note":"부모님, 형제자매 등 가족의 병력을 정리해 두세요. 건강검진이나 진료 때 유용하게 쓰여요.","repeat":true,"addLabel":"+ 가족 추가","cardLabel":"이름","groups":[{"title":"가족 정보","fields":[{"id":"name","label":"이름","type":"text"},{"id":"relation","label":"관계","type":"select","options":["배우자","자녀","아버지","어머니","형제자매","조부모","삼촌·고모·이모","기타"]},{"id":"birthdate","label":"생년월일","type":"date"}]},{"title":"병력","fields":[{"id":"major-conditions","label":"주요 질환","type":"checks","wide":true,"options":["고혈압","당뇨병","고지혈증","심장 질환","뇌졸중","암(부위는 아래에 메모)","치매","우울증 등 정신건강 질환","갑상선 질환","골다공증","간 질환","신장 질환","폐 질환","뇌전증"]},{"id":"other-conditions","label":"기타 질환·자세한 내용","type":"textarea","wide":true,"hint":"암 부위, 발병 시기 등 자세한 내용을 적어주세요."},{"id":"notes","label":"메모","type":"textarea","wide":true}]}]},{"id":"vaccination","title":"예방접종 기록","note":"한국 성인 기준 주요 접종을 미리 담아 두었어요. 자녀 접종은 빈 행에 추가하거나 '예방접종도우미' 앱·누리집에서 확인할 수 있어요.","groups":[{"title":"예방접종 기록","table":{"columns":["백신 이름","대상","1차","2차","3차","메모"],"rows":5,"presets":["독감(인플루엔자)","코로나19","파상풍(Td/Tdap)","폐렴구균","대상포진","A형간염","B형간염","HPV(사람유두종바이러스)"]},"id":"t0"}]},{"id":"health-insurance","title":"건강보험·의료보장","note":"건강보험 자격은 'The건강보험' 앱이나 국민건강보험공단(1577-1000)에서 확인할 수 있어요.","groups":[{"title":"국민건강보험","fields":[{"id":"insured-type","label":"가입 구분","type":"select","options":["직장가입자","지역가입자","피부양자","기타"]},{"id":"workplace","label":"직장명","type":"text","hint":"직장가입자인 경우 회사명을 적어주세요."},{"id":"dependents","label":"피부양자로 등재된 가족","type":"text","wide":true},{"id":"medical-aid","label":"의료급여 여부","type":"radio","options":["해당 없음","의료급여 1종","의료급여 2종"]},{"id":"longterm-care","label":"노인장기요양 등급","type":"text","hint":"등급이 있는 경우에만 적어주세요."}]},{"title":"실손의료보험","note":"증권번호, 보장 내용 등 자세한 정보는 '보험' 섹션에 정리해 두세요.","fields":[{"id":"silson-enrolled","label":"실손보험 가입 여부","type":"radio","options":["가입","미가입","모름"]},{"id":"silson-company","label":"가입 보험사","type":"text"}]}]},{"id":"health-providers","title":"주치의·단골 병원과 약국","note":"가족이 다니는 병원과 단골 약국을 한 곳씩 정리해 두세요. 갑자기 병원에 가야 할 때 헤매지 않을 수 있어요.","repeat":true,"addLabel":"+ 추가","cardLabel":"병원·약국명","groups":[{"title":"기관 정보","fields":[{"id":"target","label":"누구의 정보","type":"text","hint":"예: 온 가족, 아버지, 첫째"},{"id":"provider-type","label":"구분","type":"select","options":["주치의","자주 가는 병원","단골 약국","치과","한의원","기타"]},{"id":"provider-name","label":"병원·약국명","type":"text"},{"id":"doctor-name","label":"담당 의사·약사","type":"text"},{"id":"specialty","label":"진료 과목","type":"text"},{"id":"phone","label":"연락처","type":"text"},{"id":"address","label":"주소","type":"text","wide":true},{"id":"notes","label":"메모","type":"text","wide":true}]}]},{"id":"medical-accounts","title":"병원 앱·건강 계정","note":"건강 관련 앱과 온라인 계정을 정리해 두세요. 진료 기록이나 검진 결과를 찾을 때 필요해요.","repeat":true,"addLabel":"+ 계정 추가","cardLabel":"서비스·앱 이름","groups":[{"title":"계정 정보","fields":[{"id":"service-name","label":"서비스·앱 이름","type":"text","hint":"예: The건강보험, 병원 앱, 삼성헬스, 굿닥"},{"id":"purpose","label":"용도·설명","type":"text"},{"id":"account-no","label":"회원 번호·계정 번호","type":"text"},{"id":"website","label":"웹사이트·앱","type":"text"},{"id":"username","label":"아이디","type":"text"},{"id":"password-hint","label":"비밀번호 힌트","type":"text","sensitive":true,"hint":"비밀번호 자체보다는 힌트나 보관 위치를 적어두는 것을 권장해요."},{"id":"notes","label":"메모","type":"text","wide":true}]}]},{"id":"hospitals","title":"다니는 병원","note":"정기적으로 다니는 병원을 한 곳씩 정리해 두세요. 담당 교수님과 진료과를 적어두면 가족이 대신 예약하거나 문의하기 쉬워요.","repeat":true,"addLabel":"+ 병원 추가","cardLabel":"병원명","groups":[{"title":"병원 정보","fields":[{"id":"hospital-name","label":"병원명","type":"text"},{"id":"department","label":"진료과","type":"text"},{"id":"doctor","label":"담당 교수·의사","type":"text"},{"id":"patient-no","label":"진료카드(환자) 번호","type":"text"},{"id":"phone","label":"전화번호","type":"text"},{"id":"address","label":"주소","type":"text","wide":true},{"id":"visit-reason","label":"다니는 이유·진료 내용","type":"text","wide":true}]},{"title":"병원 앱·홈페이지","fields":[{"id":"app-site","label":"병원 앱·홈페이지","type":"text"},{"id":"app-username","label":"앱 아이디","type":"text"},{"id":"app-password-hint","label":"비밀번호 힌트","type":"text","sensitive":true,"hint":"비밀번호 자체보다는 힌트나 보관 위치를 적어두는 것을 권장해요."},{"id":"notes","label":"메모","type":"text","wide":true}]}]},{"id":"medication-log","title":"복용약 기록","note":"한 사람당 한 장씩, 지금 복용 중인 약을 정리해 두세요. 처방이 바뀔 때마다 업데이트해 두면 응급 상황에서 큰 도움이 돼요.","repeat":true,"addLabel":"+ 사람 추가","cardLabel":"이름","groups":[{"title":"대상","fields":[{"id":"name","label":"이름","type":"text"}]},{"title":"복용약 목록","table":{"columns":["약 이름","용량","복용 시간","처방 병원·약국","복용 이유"],"rows":6},"id":"t1"},{"title":"복용 시 참고사항","fields":[{"id":"med-notes","label":"주의사항·메모","type":"textarea","wide":true,"hint":"함께 먹으면 안 되는 약, 식전·식후 등 주의할 점을 적어주세요."}]}]}]},{"id":"insurance","title":"보험","icon":"🛡️","pages":[{"id":"health-insurance","title":"실손·건강보험","note":"실손의료보험과 암보험·질병보험 등 건강 관련 보험을 하나씩 정리해 두세요. 어떤 보험이 있는지만 알아도 가족이 보험금을 놓치지 않고 청구할 수 있어요.","repeat":true,"addLabel":"+ 보험 추가","cardLabel":"상품명","groups":[{"title":"기본 정보","fields":[{"id":"kind","label":"보험 종류","type":"select","options":["실손의료보험","암보험","질병·건강보험","간병·치매보험","기타"]},{"id":"company","label":"보험사","type":"text"},{"id":"product-name","label":"상품명","type":"text"},{"id":"policy-number","label":"증권번호","type":"text"},{"id":"policyholder","label":"계약자","type":"text"},{"id":"insured","label":"피보험자","type":"text"},{"id":"beneficiary","label":"수익자","type":"text"}]},{"title":"보험료·납입","fields":[{"id":"premium","label":"월 보험료","type":"text"},{"id":"payment-day","label":"납입일","type":"text","hint":"예: 매월 25일"},{"id":"payment-method","label":"납입 방법","type":"select","options":["계좌 자동이체","카드 자동결제","직접 납부","기타"]},{"id":"start-date","label":"가입일","type":"date"},{"id":"end-date","label":"만기일","type":"date"},{"id":"renewal","label":"갱신 주기","type":"text","hint":"예: 5년 갱신형, 비갱신"}]},{"title":"보장 내용","fields":[{"id":"coverage","label":"주요 보장 내용","type":"textarea","wide":true,"hint":"입원·통원 한도, 진단비 등 기억해 둘 보장을 적어 주세요."},{"id":"deductible","label":"자기부담금","type":"text","hint":"예: 통원 1만 원 또는 20% 중 큰 금액"}]},{"title":"담당·청구","fields":[{"id":"agent-name","label":"담당 설계사","type":"text"},{"id":"agent-phone","label":"설계사 연락처","type":"text"},{"id":"call-center","label":"보험사 콜센터","type":"text"},{"id":"app","label":"보험사 앱/웹사이트","type":"text"},{"id":"claim-note","label":"청구 방법 메모","type":"textarea","wide":true,"hint":"필요 서류, 청구 앱 사용법 등을 적어 두면 가족이 헤매지 않아요."}]}]},{"id":"life-insurance","title":"생명보험","note":"종신·정기보험은 남은 가족에게 가장 중요한 보험이에요. 수익자가 누구로 지정되어 있는지, 청구는 어떻게 하는지 꼭 적어 두세요.","repeat":true,"addLabel":"+ 보험 추가","cardLabel":"상품명","groups":[{"title":"기본 정보","fields":[{"id":"kind","label":"보험 종류","type":"select","options":["종신보험","정기보험","변액보험","기타"]},{"id":"company","label":"보험사","type":"text"},{"id":"product-name","label":"상품명","type":"text"},{"id":"policy-number","label":"증권번호","type":"text"},{"id":"policyholder","label":"계약자","type":"text"},{"id":"insured","label":"피보험자","type":"text"},{"id":"beneficiary","label":"수익자","type":"text","hint":"수익자가 지정되어 있는지 꼭 확인해 두세요. 미지정이면 법정상속인에게 지급돼요."},{"id":"coverage-amount","label":"보장 금액(사망보험금)","type":"text"}]},{"title":"보험료·납입","fields":[{"id":"premium","label":"월 보험료","type":"text"},{"id":"payment-day","label":"납입일","type":"text"},{"id":"payment-method","label":"납입 방법","type":"select","options":["계좌 자동이체","카드 자동결제","직접 납부","기타"]},{"id":"payment-period","label":"납입 기간","type":"text","hint":"예: 20년납, 60세납"},{"id":"coverage-period","label":"보장 기간","type":"text","hint":"예: 종신, 80세 만기"}]},{"title":"담당·청구","fields":[{"id":"agent-name","label":"담당 설계사","type":"text"},{"id":"agent-phone","label":"설계사 연락처","type":"text"},{"id":"call-center","label":"보험사 콜센터","type":"text"},{"id":"app","label":"보험사 앱/웹사이트","type":"text"},{"id":"claim-note","label":"청구 방법 메모","type":"textarea","wide":true,"hint":"사망보험금 청구에 필요한 서류(사망진단서 등)를 미리 적어 두면 좋아요."}]}]},{"id":"property-insurance","title":"화재·주택보험","note":"집과 살림살이를 지켜 주는 보험이에요. 아파트는 단체 화재보험에 가입된 경우가 많으니 관리사무소를 통해 확인해 두면 좋아요.","repeat":true,"addLabel":"+ 보험 추가","cardLabel":"상품명","groups":[{"title":"기본 정보","fields":[{"id":"kind","label":"보험 종류","type":"select","options":["주택화재보험","주택종합보험","풍수해보험","단체 화재보험(아파트)","기타"]},{"id":"target-address","label":"대상 주소","type":"text","wide":true},{"id":"company","label":"보험사","type":"text"},{"id":"product-name","label":"상품명","type":"text"},{"id":"policy-number","label":"증권번호","type":"text"},{"id":"policyholder","label":"계약자","type":"text"}]},{"title":"보장·보험료","fields":[{"id":"coverage","label":"주요 보장 내용","type":"textarea","wide":true,"hint":"건물·가재도구 보장 한도, 배상책임 특약 등을 적어 주세요."},{"id":"premium","label":"보험료","type":"text"},{"id":"payment-day","label":"납입일","type":"text"},{"id":"payment-method","label":"납입 방법","type":"select","options":["계좌 자동이체","카드 자동결제","직접 납부","기타"]},{"id":"end-date","label":"만기일","type":"date"}]},{"title":"담당·청구","fields":[{"id":"agent-name","label":"담당 설계사","type":"text"},{"id":"agent-phone","label":"설계사 연락처","type":"text"},{"id":"call-center","label":"보험사 콜센터","type":"text"},{"id":"claim-note","label":"청구 방법 메모","type":"textarea","wide":true}]}]},{"id":"vehicle-insurance","title":"자동차·운전자보험","note":"자동차보험은 1년마다 갱신돼요. 만기일과 긴급출동 번호를 적어 두면 사고가 나도 당황하지 않을 수 있어요.","repeat":true,"addLabel":"+ 보험 추가","cardLabel":"상품명","groups":[{"title":"구분·차량 정보","fields":[{"id":"kind","label":"보험 구분","type":"select","options":["자동차보험","운전자보험"]},{"id":"vehicle","label":"차량","type":"text","hint":"예: 현대 아반떼 (운전자보험이면 비워 두세요)"},{"id":"plate-number","label":"차량번호","type":"text"}]},{"title":"계약 정보","fields":[{"id":"company","label":"보험사","type":"text"},{"id":"product-name","label":"상품명","type":"text"},{"id":"policy-number","label":"증권번호","type":"text"},{"id":"insured","label":"기명피보험자","type":"text"},{"id":"start-date","label":"보험 시작일","type":"date"},{"id":"end-date","label":"만기일","type":"date"},{"id":"premium","label":"연간 보험료","type":"text"},{"id":"payment-method","label":"납입 방법","type":"select","options":["일시납","분납(카드)","분납(계좌이체)","기타"]}]},{"title":"보장·특약","fields":[{"id":"driver-range","label":"운전자 범위","type":"text","hint":"예: 부부 한정, 만 30세 이상"},{"id":"coverage","label":"주요 특약","type":"textarea","wide":true,"hint":"자기차량손해, 긴급출동, 블랙박스 특약 등을 적어 주세요."},{"id":"deductible","label":"자기부담금","type":"text"}]},{"title":"긴급출동·청구","fields":[{"id":"emergency-call","label":"긴급출동 전화번호","type":"text"},{"id":"accident-call","label":"사고 접수 콜센터","type":"text"},{"id":"agent-name","label":"담당 설계사(또는 다이렉트)","type":"text"},{"id":"agent-phone","label":"설계사 연락처","type":"text"},{"id":"claim-note","label":"청구 방법 메모","type":"textarea","wide":true}]}]},{"id":"other-insurance","title":"기타 보험","note":"치아보험, 여행자보험, 펫보험 등 나머지 보험도 잊지 말고 정리해 두세요.","repeat":true,"addLabel":"+ 보험 추가","cardLabel":"상품명","groups":[{"title":"기본 정보","fields":[{"id":"kind","label":"보험 종류","type":"select","options":["치아보험","상해보험","여행자보험","펫보험","배상책임보험","기타"]},{"id":"company","label":"보험사","type":"text"},{"id":"product-name","label":"상품명","type":"text"},{"id":"policy-number","label":"증권번호","type":"text"},{"id":"policyholder","label":"계약자","type":"text"},{"id":"insured","label":"피보험자","type":"text","hint":"펫보험이라면 반려동물 이름을 적어 주세요."}]},{"title":"보험료·납입","fields":[{"id":"premium","label":"월 보험료","type":"text"},{"id":"payment-day","label":"납입일","type":"text"},{"id":"payment-method","label":"납입 방법","type":"select","options":["계좌 자동이체","카드 자동결제","직접 납부","기타"]},{"id":"end-date","label":"만기일","type":"date"}]},{"title":"보장·청구","fields":[{"id":"coverage","label":"주요 보장 내용","type":"textarea","wide":true},{"id":"agent-name","label":"담당 설계사","type":"text"},{"id":"agent-phone","label":"설계사 연락처","type":"text"},{"id":"call-center","label":"보험사 콜센터","type":"text"},{"id":"claim-note","label":"청구 방법 메모","type":"textarea","wide":true}]}]}]},{"id":"financial","title":"금융","icon":"💰","pages":[{"id":"bank-accounts","title":"은행 계좌","note":"가족이 몰라서 못 찾는 계좌가 없도록, 쓰고 있는 계좌를 하나씩 정리해 두세요. 잊고 있던 계좌는 '어카운트인포' 앱에서 한 번에 조회할 수 있어요.","repeat":true,"addLabel":"+ 계좌 추가","cardLabel":"은행명","groups":[{"title":"계좌 정보","fields":[{"id":"bank-name","label":"은행명","type":"text"},{"id":"account-type","label":"계좌 종류","type":"select","options":["입출금(자유입출금)","정기예금","적금","주택청약","외화","기타"]},{"id":"account-number","label":"계좌번호","type":"text"},{"id":"holder","label":"예금주","type":"text"},{"id":"purpose","label":"용도","type":"text","hint":"예: 월급 통장, 생활비, 비상금"},{"id":"balance","label":"대략적인 잔액","type":"text"}]},{"title":"자동이체","fields":[{"id":"autopay","label":"자동이체 여부","type":"radio","options":["있음","없음"]},{"id":"autopay-detail","label":"주요 자동이체 내역","type":"textarea","wide":true,"hint":"예: 관리비, 통신비, 보험료. 계좌를 정리할 때 꼭 필요한 정보예요."}]},{"title":"접근 정보·메모","fields":[{"id":"banking-id","label":"인터넷뱅킹 아이디","type":"text","sensitive":true,"hint":"비밀번호 자체보다는 힌트나 보관 위치를 적어두는 것을 권장해요."},{"id":"otp-location","label":"보안카드·OTP 보관 위치","type":"text","sensitive":true},{"id":"app","label":"은행 앱/콜센터","type":"text"},{"id":"memo","label":"메모","type":"textarea","wide":true}]}]},{"id":"credit-cards","title":"신용·체크카드","note":"쓰고 있는 카드와 결제일, 자동결제 내역을 정리해 두세요. 명의자가 세상을 떠나면 카드는 해지해야 하니, 어떤 카드가 있는지 아는 것이 중요해요.","repeat":true,"addLabel":"+ 카드 추가","cardLabel":"카드 이름","groups":[{"title":"카드 정보","fields":[{"id":"issuer","label":"카드사","type":"text"},{"id":"card-name","label":"카드 이름","type":"text","hint":"예: 신한 Deep Dream, 국민 노리체크"},{"id":"card-kind","label":"카드 종류","type":"radio","options":["신용카드","체크카드"]},{"id":"holder","label":"명의자","type":"text"},{"id":"last-digits","label":"카드번호 뒤 4자리","type":"text","hint":"전체 카드번호는 적지 않는 것이 안전해요."},{"id":"expiry","label":"유효기간","type":"text"}]},{"title":"결제 정보","fields":[{"id":"billing-day","label":"결제일","type":"text","hint":"예: 매월 14일"},{"id":"billing-account","label":"결제 계좌","type":"text"},{"id":"annual-fee","label":"연회비","type":"text"},{"id":"credit-limit","label":"이용 한도(대략)","type":"text"}]},{"title":"자동결제·혜택","fields":[{"id":"auto-payments","label":"주요 자동결제","type":"textarea","wide":true,"hint":"예: 통신비, 구독 서비스, 아파트 관리비"},{"id":"benefits","label":"주요 혜택 메모","type":"text"}]},{"title":"보안·연락처","fields":[{"id":"pin-memo","label":"PIN·CVV 메모","type":"text","sensitive":true,"hint":"PIN이나 CVV 자체보다는 힌트나 보관 위치를 적어두는 것을 권장해요."},{"id":"call-center","label":"카드사 앱/콜센터","type":"text"}]}]},{"id":"loans","title":"대출","note":"대출도 상속의 일부예요. 어떤 대출이 얼마나 남았는지 정리해 두면 가족이 재산과 함께 차분히 검토할 수 있어요.","repeat":true,"addLabel":"+ 대출 추가","cardLabel":"금융기관","groups":[{"title":"대출 정보","fields":[{"id":"loan-type","label":"대출 종류","type":"select","options":["주택담보대출","전세자금대출","신용대출","마이너스통장","학자금대출","자동차 할부","기타"]},{"id":"institution","label":"금융기관","type":"text","hint":"은행, 카드사, 캐피탈 등"},{"id":"loan-account","label":"대출 계좌번호","type":"text"},{"id":"purpose","label":"대출 용도","type":"text","hint":"예: OO아파트 구입, 전세 보증금"},{"id":"total-amount","label":"총 대출액","type":"text"},{"id":"balance","label":"현재 잔액(대략)","type":"text"}]},{"title":"상환 정보","fields":[{"id":"interest-note","label":"금리 메모","type":"text","hint":"예: 변동 4.2%, 6개월마다 갱신"},{"id":"repay-method","label":"상환 방식","type":"select","options":["원리금 균등","원금 균등","만기 일시 상환","마이너스통장(수시)","기타"]},{"id":"repay-day","label":"매월 상환일","type":"text"},{"id":"monthly-payment","label":"월 상환액","type":"text"},{"id":"maturity-date","label":"만기일","type":"date"},{"id":"repay-account","label":"상환 계좌(자동이체)","type":"text"}]},{"title":"연락처·메모","fields":[{"id":"contact","label":"담당 지점·상담사","type":"text"},{"id":"contact-phone","label":"연락처","type":"text"},{"id":"memo","label":"메모","type":"textarea","wide":true}]}]},{"id":"pension","title":"연금","note":"국민연금·퇴직연금·개인연금을 한곳에 정리해 두세요. 노후 준비 상황을 가족과 공유하는 데도 도움이 돼요.","groups":[{"title":"국민연금","fields":[{"id":"np-start-age","label":"예상 수령 시작 나이","type":"text"},{"id":"np-amount","label":"예상 월 수령액","type":"text","hint":"'내 곁에 국민연금' 앱이나 국민연금공단(1355)에서 확인할 수 있어요."},{"id":"np-memo","label":"메모","type":"text","hint":"예: 유족연금·반환일시금 관련 참고 사항"}]},{"title":"퇴직연금","fields":[{"id":"rp-type","label":"유형","type":"select","options":["DB형(확정급여)","DC형(확정기여)","IRP(개인형)","해당 없음"]},{"id":"rp-firm","label":"운용 금융기관","type":"text"},{"id":"rp-account","label":"계좌·상품명","type":"text"},{"id":"rp-balance","label":"현재 적립금(대략)","type":"text"},{"id":"rp-contact","label":"회사 담당 부서·연락처","type":"text"},{"id":"rp-memo","label":"메모","type":"text"}]},{"title":"개인연금","fields":[{"id":"pp-type","label":"구분","type":"select","options":["연금저축펀드","연금저축보험","연금보험","기타"]},{"id":"pp-firm","label":"금융사","type":"text"},{"id":"pp-product","label":"상품명","type":"text"},{"id":"pp-monthly","label":"월 납입액","type":"text"},{"id":"pp-start-age","label":"연금 개시 예정 나이","type":"text"},{"id":"pp-memo","label":"메모","type":"text"}]},{"title":"추가 연금 계좌","note":"연금 계좌가 여러 개라면 여기에 더 적어 주세요.","table":{"columns":["구분","금융사","상품명","적립금(대략)","메모"],"rows":3},"id":"t3"}]},{"id":"brokerage-accounts","title":"증권 계좌","note":"증권 계좌와 주요 보유 종목을 정리해 두세요. 정확할 필요는 없어요. 어느 증권사에 무엇이 있는지만 알아도 충분해요.","repeat":true,"addLabel":"+ 계좌 추가","cardLabel":"증권사","groups":[{"title":"계좌 정보","fields":[{"id":"firm","label":"증권사","type":"text"},{"id":"account-type","label":"계좌 종류","type":"select","options":["종합매매(주식)","CMA","ISA","연금저축계좌","해외주식","기타"]},{"id":"account-number","label":"계좌번호","type":"text"},{"id":"holder","label":"명의자","type":"text"},{"id":"purpose","label":"계좌 용도","type":"text","hint":"예: 장기 투자용, 배당주 계좌"},{"id":"balance","label":"대략적인 평가액","type":"text"}]},{"title":"주요 보유 종목","table":{"columns":["종목명","수량","대략 평가액","메모"],"rows":3},"id":"t1"},{"title":"접근·담당","fields":[{"id":"app-id","label":"증권사 앱 아이디","type":"text","sensitive":true,"hint":"비밀번호 자체보다는 힌트나 보관 위치를 적어두는 것을 권장해요."},{"id":"advisor","label":"담당자·지점","type":"text"},{"id":"advisor-phone","label":"연락처","type":"text"},{"id":"memo","label":"메모","type":"textarea","wide":true}]}]},{"id":"crypto-assets","title":"가상자산","note":"가상자산은 가족이 존재 자체를 모르면 영영 찾을 수 없어요. 어느 거래소에 어떻게 보관하고 있는지만이라도 남겨 두세요.","repeat":true,"addLabel":"+ 항목 추가","cardLabel":"거래소·보관처","groups":[{"title":"보관 정보","fields":[{"id":"exchange","label":"거래소·보관처","type":"text","hint":"예: 업비트, 빗썸, 개인 지갑"},{"id":"storage-type","label":"보관 방식","type":"select","options":["국내 거래소","해외 거래소","개인 지갑(하드월렛)","개인 지갑(소프트웨어)","기타"]},{"id":"assets","label":"주요 보유 자산","type":"text","hint":"예: 비트코인, 이더리움"},{"id":"balance","label":"대략적인 평가액","type":"text"}]},{"title":"접근 정보","fields":[{"id":"account-id","label":"계정 아이디","type":"text","sensitive":true,"hint":"비밀번호 자체보다는 힌트나 보관 위치를 적어두는 것을 권장해요."},{"id":"seed-location","label":"복구 정보(시드 구문) 보관 위치","type":"text","sensitive":true,"hint":"시드 구문 자체는 절대 그대로 적지 마세요. 보관 위치나 힌트만 남겨 두세요."},{"id":"memo","label":"메모","type":"textarea","wide":true}]}]},{"id":"financial-contacts","title":"금융 관련 연락처","note":"돈 문제로 믿고 연락할 수 있는 사람들이에요. 가족이 바로 연락할 수 있도록 한 명씩 정리해 두세요.","repeat":true,"addLabel":"+ 연락처 추가","cardLabel":"이름","groups":[{"title":"연락처 정보","fields":[{"id":"role","label":"구분","type":"select","options":["은행 담당자","증권사 담당자","보험설계사","세무사·회계사","대출 상담사","변호사·법무사","기타"]},{"id":"name","label":"이름","type":"text"},{"id":"affiliation","label":"소속(회사·지점)","type":"text"},{"id":"phone","label":"연락처","type":"text"},{"id":"email","label":"이메일","type":"text"},{"id":"duty","label":"맡기고 있는 일","type":"text","hint":"예: 연말정산, 대출 상담, 보험 관리"},{"id":"memo","label":"메모","type":"textarea","wide":true}]}]},{"id":"subscriptions","title":"정기결제·구독","note":"매달 자동으로 빠져나가는 구독은 잊기 쉬워요. 카드 명세서를 한번 훑어보며 정리해 보세요. 해지 방법까지 적어 두면 가족이 불필요한 결제를 바로 멈출 수 있어요.","groups":[{"title":"구독 목록","table":{"columns":["서비스명","금액","결제 주기","결제일","결제 수단","해지 방법"],"rows":8},"id":"t0"}]},{"id":"stored-valuables","title":"귀중품 보관","note":"금·귀금속, 상품권, 현금 등 보관 중인 귀중품을 적어 두세요. 보관 위치는 가족만 알아볼 수 있는 표현으로 적어도 좋아요.","groups":[{"title":"귀중품 목록","table":{"columns":["품목","설명","대략적인 가치","보관 위치","메모"],"rows":6},"id":"t0"}]},{"id":"debt","title":"갚을 돈·받을 돈","note":"금융기관 대출 외에 개인적으로 주고받은 돈을 정리해 두세요. 차용증 같은 증빙이 있다면 보관 위치도 함께 적어 주세요.","repeat":true,"addLabel":"+ 항목 추가","cardLabel":"상대방","groups":[{"title":"내역","fields":[{"id":"direction","label":"구분","type":"radio","options":["갚을 돈","받을 돈"]},{"id":"counterpart","label":"상대방","type":"text","hint":"이름 또는 기관명"},{"id":"relation","label":"관계","type":"text"},{"id":"amount","label":"금액","type":"text"},{"id":"terms","label":"이자·조건","type":"text"},{"id":"due-date","label":"갚기로 한 날","type":"date"},{"id":"evidence","label":"증빙(차용증 등) 보관 위치","type":"text"},{"id":"memo","label":"메모","type":"textarea","wide":true}]}]},{"id":"savings","title":"예·적금","note":"예·적금은 만기일을 적어 두면 놓치지 않고 챙길 수 있어요. 상세 정보는 '은행 계좌' 페이지에, 여기에는 한눈에 보는 목록으로 정리해 두세요.","groups":[{"title":"예·적금 목록","table":{"columns":["은행","상품명","종류(예금/적금)","만기일","금액","메모"],"rows":6},"id":"t0"}]},{"id":"tax-notes","title":"세금 관련 메모","note":"연말정산이나 종합소득세처럼 해마다 챙겨야 하는 세금 관련 정보를 남겨 두세요.","groups":[{"title":"세금 정보","fields":[{"id":"year-end-items","label":"연말정산 주요 항목","type":"textarea","wide":true,"hint":"예: 월세 세액공제, 기부금, 의료비, 연금저축 등 매년 챙기는 항목"},{"id":"income-tax","label":"종합소득세 신고","type":"radio","options":["매년 신고함","해당 없음"]},{"id":"filing-note","label":"신고 방법 메모","type":"text","hint":"예: 5월에 홈택스에서 직접 신고, 세무사 대행"},{"id":"tax-accountant","label":"담당 세무사","type":"text"},{"id":"tax-accountant-phone","label":"세무사 연락처","type":"text"},{"id":"hometax-id","label":"홈택스 아이디","type":"text","sensitive":true,"hint":"비밀번호 자체보다는 힌트나 보관 위치를 적어두는 것을 권장해요."},{"id":"memo","label":"기타 메모","type":"textarea","wide":true}]}]}]},{"id":"household","title":"생활비·집 관리","icon":"🏡","pages":[{"id":"monthly-income","title":"월 수입","note":"매달 들어오는 돈을 정리해 두면, 가족이 가계 상황을 한눈에 파악할 수 있어요.","groups":[{"title":"월 수입 내역","table":{"columns":["수입원","금액(원)","입금일","입금 계좌","메모"],"rows":3,"presets":["급여","배우자 급여","사업·프리랜스 소득","임대 소득","연금","이자·배당","아동수당 등 정부 지원금"]},"id":"t0"},{"title":"정리","fields":[{"id":"income-total","label":"월 수입 합계(대략)","type":"text"},{"id":"income-notes","label":"메모","type":"textarea","wide":true,"hint":"수입이 들쭉날쭉한 달, 상여금 시기 등 참고할 내용을 적어 두세요."}]}]},{"id":"monthly-budget","title":"월 고정지출·예산","note":"매달 나가는 돈을 적어 두세요. 갑자기 살림을 맡게 된 가족에게 가장 먼저 필요한 정보예요.","groups":[{"title":"고정지출","note":"자동이체·카드 결제로 매달 빠져나가는 항목이에요. 어느 계좌·카드에서 나가는지도 함께 적어 두세요.","table":{"columns":["항목","금액(원)","결제일","결제 수단(계좌·카드)","메모"],"rows":4,"presets":["주거비(월세·관리비)","전기요금","도시가스","수도요금","휴대폰 통신비","인터넷·IPTV","보험료","대출 상환","교육비","렌탈료(정수기 등)","구독 서비스","교통비·유류비","경조사비(월 평균)"]},"id":"t0"},{"title":"변동지출·저축","table":{"columns":["항목","한 달 평균(원)","메모"],"rows":3,"presets":["식비·장보기","외식·배달","용돈","적금·저축","투자"]},"id":"t1"},{"title":"정리","fields":[{"id":"expense-total","label":"월 지출 합계(대략)","type":"text"},{"id":"budget-notes","label":"메모","type":"textarea","wide":true}]}]},{"id":"general-household","title":"우리 집 기본 정보","note":"집에 대해 나만 알고 있는 것들을 남겨 두세요. 사소해 보여도 가족에게는 꼭 필요한 정보예요.","groups":[{"title":"기본 정보","fields":[{"id":"home-address","label":"주소","type":"text","wide":true},{"id":"mgmt-office-phone","label":"관리사무소 연락처","type":"text"},{"id":"security-office-phone","label":"경비실 연락처","type":"text"}]},{"title":"집 관련 메모","fields":[{"id":"repair-history","label":"수리 이력·집 상태","type":"textarea","wide":true,"hint":"보일러 교체 시기, 누수 이력, 결로가 생기는 곳, 두꺼비집 위치 등을 적어 두세요."},{"id":"neighborhood-info","label":"이웃·동네 정보","type":"textarea","wide":true,"hint":"친한 이웃, 층간소음 등 주의할 점, 자주 가는 동네 가게 등을 남겨 두면 좋아요."},{"id":"house-secrets","label":"그 밖에 알아둘 것","type":"textarea","wide":true,"hint":"나만 아는 집의 요령이 있다면 알려 주세요. 예: 보일러는 외출 모드로, 베란다 문은 살짝 들어서 닫기."}]}]},{"id":"housing-expenses","title":"주거비","note":"월세·전세·자가에 따라 해당하는 부분만 채우면 돼요. 계약서 보관 위치도 함께 적어 두세요.","groups":[{"title":"주거 형태","fields":[{"id":"housing-type","label":"주거 형태","type":"radio","options":["자가","전세","월세","기타"]},{"id":"deposit","label":"보증금","type":"text"},{"id":"monthly-rent","label":"월세(해당 시)","type":"text"},{"id":"rent-due-day","label":"월세 납부일","type":"text"},{"id":"landlord-name","label":"임대인(집주인) 이름","type":"text"},{"id":"landlord-phone","label":"임대인 연락처","type":"text"},{"id":"contract-end","label":"계약 만료일","type":"date"},{"id":"contract-location","label":"계약서 보관 위치","type":"text"}]},{"title":"관리비","fields":[{"id":"mgmt-fee","label":"월 관리비(대략)","type":"text"},{"id":"mgmt-fee-method","label":"납부 방법","type":"select","options":["자동이체","지로·고지서","관리사무소 앱","기타"]},{"id":"mgmt-fee-day","label":"납부일","type":"text"},{"id":"mgmt-fee-contact","label":"관리사무소 연락처","type":"text"}]},{"title":"재산세","note":"자가라면 재산세가 매년 7월과 9월에 나뉘어 부과돼요.","fields":[{"id":"property-tax-method","label":"납부 방법","type":"text","hint":"예: 위택스 자동이체, 카드 납부, 고지서"},{"id":"property-tax-notes","label":"메모","type":"text","wide":true}]},{"title":"수리·유지보수","fields":[{"id":"repair-company","label":"단골 수리·설비 업체","type":"text"},{"id":"repair-phone","label":"업체 연락처","type":"text"},{"id":"repair-notes","label":"메모","type":"text","wide":true}]}]},{"id":"utility-bills","title":"공과금·통신·렌탈","note":"고지서가 어디서 오고 어떻게 납부되는지만 적어 두어도, 가족이 밀리지 않고 정리할 수 있어요.","groups":[{"title":"전기 (한국전력)","fields":[{"id":"kepco-customer-no","label":"고객번호","type":"text","hint":"전기요금 고지서나 한전:ON 앱에서 확인할 수 있어요."},{"id":"kepco-holder","label":"명의자","type":"text"},{"id":"kepco-method","label":"납부 방법","type":"select","options":["자동이체","신용카드 자동납부","지로·고지서","아파트 관리비에 합산","기타"]},{"id":"kepco-notes","label":"메모","type":"text","wide":true,"hint":"TV 수신료(월 2,500원)가 전기요금에 합산 청구되는지도 적어 두세요."}]},{"title":"도시가스","fields":[{"id":"gas-company","label":"도시가스사","type":"text","hint":"지역마다 공급사가 달라요. 예: 서울도시가스, 삼천리, 경동도시가스"},{"id":"gas-customer-no","label":"고객번호","type":"text"},{"id":"gas-holder","label":"명의자","type":"text"},{"id":"gas-method","label":"납부 방법","type":"text","hint":"이사할 때는 도시가스사에 전출 신청을 해야 해요."}]},{"title":"수도","fields":[{"id":"water-office","label":"관할 수도사업소","type":"text","hint":"예: 서울 아리수, ○○시 상수도사업소. 아파트는 관리비에 포함되기도 해요."},{"id":"water-customer-no","label":"수도 고객번호","type":"text"},{"id":"water-method","label":"납부 방법","type":"text"}]},{"title":"휴대폰 요금","table":{"columns":["사용자","통신사","월 요금(대략)","납부 방법","메모"],"rows":3},"id":"t3"},{"title":"인터넷·IPTV","fields":[{"id":"internet-company","label":"통신사","type":"text"},{"id":"internet-holder","label":"명의자","type":"text"},{"id":"internet-fee","label":"월 요금","type":"text"},{"id":"internet-contract-end","label":"약정 만료일","type":"date","hint":"약정이 남은 상태로 해지하면 위약금이 나올 수 있어요."},{"id":"internet-support","label":"해지·문의 전화","type":"text"},{"id":"internet-notes","label":"메모","type":"text","wide":true}]},{"title":"렌탈 제품","note":"정수기·안마의자처럼 매달 렌탈료가 나가는 제품이에요. 해지 문의처를 꼭 적어 두세요.","table":{"columns":["품목","업체","월 렌탈료(원)","결제일","약정 만료","해지·문의 연락처"],"rows":2,"presets":["정수기","공기청정기","비데","안마의자"]},"id":"t5"},{"title":"분리수거·생활","fields":[{"id":"trash-schedule","label":"쓰레기·분리수거 배출 요일","type":"text","wide":true,"hint":"예: 일반쓰레기 매일 저녁, 재활용 화·금, 음식물은 전용 수거함(카드 태그)"},{"id":"utility-etc-notes","label":"메모","type":"textarea","wide":true,"hint":"종량제 봉투 파는 곳, 대형 폐기물 배출 방법 등을 적어 두면 좋아요."}]}]},{"id":"education-expenses","title":"교육비","note":"학교·학원·과외처럼 매달 나가는 교육비를 기관별로 한 장씩 적어 두세요.","repeat":true,"addLabel":"+ 교육비 추가","cardLabel":"기관명","groups":[{"title":"기관 정보","fields":[{"id":"edu-name","label":"기관명","type":"text"},{"id":"edu-type","label":"구분","type":"select","options":["학교","유치원·어린이집","학원","과외","학습지·온라인 강의","기타"]},{"id":"edu-student","label":"대상(자녀 이름)","type":"text"},{"id":"edu-amount","label":"월 금액","type":"text"},{"id":"edu-pay-day","label":"결제일","type":"text"},{"id":"edu-pay-method","label":"결제 방법","type":"text","hint":"예: CMS 자동이체, 앱 결제, 현장 카드 결제"},{"id":"edu-teacher","label":"선생님·담당자","type":"text"},{"id":"edu-phone","label":"연락처","type":"text"},{"id":"edu-notes","label":"메모","type":"textarea","wide":true,"hint":"수업 요일·시간, 차량 이용 여부 등을 적어 두면 좋아요."}]}]},{"id":"other-expenses","title":"기타 정기 지출","note":"앞의 항목에 없는 정기 지출을 하나씩 적어 두세요. 해지 방법까지 있으면 가족이 정리하기 쉬워요.","repeat":true,"addLabel":"+ 지출 항목 추가","cardLabel":"항목","groups":[{"title":"지출 정보","fields":[{"id":"other-name","label":"항목","type":"text"},{"id":"other-company","label":"업체·서비스","type":"text"},{"id":"other-desc","label":"내용","type":"text","wide":true},{"id":"other-amount","label":"금액","type":"text"},{"id":"other-cycle","label":"결제 주기","type":"select","options":["매주","매월","분기","매년","비정기"]},{"id":"other-pay-day","label":"결제일","type":"text"},{"id":"other-pay-method","label":"결제 수단","type":"text"},{"id":"other-cancel-contact","label":"해지·문의 연락처","type":"text"},{"id":"other-notes","label":"메모","type":"textarea","wide":true}]}]},{"id":"home-valuables","title":"가전·가구·보증 정보","note":"A/S를 부르거나 처분할 때 필요한 정보예요. 모델명과 시리얼 번호는 제품 뒷면 스티커에서 확인할 수 있어요.","groups":[{"title":"가전·가구 목록","table":{"columns":["제품명","모델명","시리얼 번호","구입일","보증 만료일","A/S 연락처","메모"],"rows":3,"presets":["냉장고","세탁기","에어컨","TV","김치냉장고","건조기","공기청정기"]},"id":"t0"},{"title":"보관 위치·메모","fields":[{"id":"warranty-location","label":"보증서·설명서 보관 위치","type":"text","wide":true},{"id":"valuables-notes","label":"메모","type":"textarea","wide":true,"hint":"귀금속 등 값나가는 물건의 보관 위치는 금융 섹션의 '보관 중인 귀중품'에 적어 두세요."}]}]}]},{"id":"vehicle","title":"차량","icon":"🚗","pages":[{"id":"vehicle-info","title":"차량 정보","note":"차량 한 대당 한 장씩 작성해 두세요. 보험사와 긴급출동 번호만 있어도 급할 때 큰 도움이 돼요.","repeat":true,"addLabel":"+ 차량 추가","cardLabel":"차종","groups":[{"title":"기본 정보","fields":[{"id":"car-model","label":"차종","type":"text","hint":"예: 현대 아반떼, 기아 쏘렌토"},{"id":"car-year","label":"연식","type":"text"},{"id":"car-color","label":"색상","type":"text"},{"id":"car-plate","label":"차량번호","type":"text"},{"id":"car-vin","label":"차대번호","type":"text","hint":"자동차등록증에서 확인할 수 있어요."},{"id":"car-owner","label":"명의자","type":"text"},{"id":"car-purchase-date","label":"구입일","type":"date"},{"id":"car-purchase-price","label":"구입 가격","type":"text"},{"id":"car-purchase-from","label":"구입처","type":"text"}]},{"title":"소유·금융","fields":[{"id":"car-ownership","label":"소유 형태","type":"radio","options":["자가(완납)","할부","리스","장기렌트"]},{"id":"car-finance-company","label":"금융사(캐피탈)","type":"text"},{"id":"car-monthly-payment","label":"월 납입액","type":"text"},{"id":"car-finance-end","label":"만기일","type":"date"},{"id":"car-finance-contact","label":"금융사 문의 연락처","type":"text"},{"id":"car-finance-notes","label":"메모","type":"text","wide":true,"hint":"만기 후 인수 조건, 주행거리 제한 등 계약 내용을 적어 두세요."}]},{"title":"자동차보험","fields":[{"id":"car-insurance-company","label":"보험사","type":"text"},{"id":"car-insurance-policy","label":"증권번호","type":"text"},{"id":"car-insurance-renewal","label":"만기일(갱신일)","type":"date","hint":"만기 전에 갱신하지 않으면 과태료가 나올 수 있어요."},{"id":"car-emergency-call","label":"긴급출동 전화","type":"text"},{"id":"car-insurance-agent","label":"담당 설계사","type":"text"},{"id":"car-insurance-agent-phone","label":"설계사 연락처","type":"text"}]},{"title":"세금·검사","fields":[{"id":"car-tax","label":"자동차세 납부","type":"radio","options":["연납(1월 일괄 납부)","분납(6월·12월)"]},{"id":"car-inspection-next","label":"다음 정기검사일","type":"date","hint":"승용차는 보통 2년마다 받아요. 안내 우편·문자가 오면 예약하세요."},{"id":"car-tax-notes","label":"메모","type":"text","wide":true}]},{"title":"부가 정보","fields":[{"id":"car-hipass","label":"하이패스 카드","type":"text","hint":"카드사와 선불·후불 여부를 적어 두세요."},{"id":"car-blackbox","label":"블랙박스","type":"text","hint":"제조사·모델명"},{"id":"car-blackbox-password","label":"블랙박스 비밀번호","type":"text","sensitive":true,"hint":"비밀번호 자체보다는 힌트나 보관 위치를 적어 두는 것을 권장해요."},{"id":"car-shop","label":"단골 정비소","type":"text"},{"id":"car-shop-phone","label":"정비소 연락처","type":"text"},{"id":"car-docs-location","label":"차량 서류·사진 보관 위치","type":"text","hint":"자동차등록증, 보험 증권, 차량 사진 등을 어디에 두었는지 적어 두세요."},{"id":"car-notes","label":"메모","type":"textarea","wide":true}]}]},{"id":"maintenance-history","title":"정비·수리 이력","note":"엔진오일 교체 같은 소모품 관리부터 사고 수리, 튜닝(구조 변경)까지 이 표에 함께 기록해 두세요.","groups":[{"title":"정비 기록","table":{"columns":["날짜","정비 내용","업체","비용(원)","주행거리(km)","메모"],"rows":8},"id":"t0"}]}]},{"id":"online","title":"온라인 계정","icon":"🔑","pages":[{"id":"email-accounts","title":"이메일 계정","note":"네이버·카카오는 유족이 사망 증빙 서류로 계정 정리(백업·탈퇴)를 요청할 수 있어요. 비밀번호는 직접 적기보다 힌트만 남기는 것을 권장해요.","repeat":true,"addLabel":"+ 이메일 계정 추가","cardLabel":"이메일 주소","groups":[{"title":"계정 정보","fields":[{"id":"email-service","label":"서비스","type":"select","options":["네이버","카카오(다음)","구글(Gmail)","회사 메일","기타"]},{"id":"email-address","label":"이메일 주소","type":"text"},{"id":"email-usage","label":"용도","type":"text","hint":"예: 주 사용, 금융 알림용, 쇼핑·가입용"},{"id":"email-password-hint","label":"비밀번호 힌트","type":"text","sensitive":true,"hint":"비밀번호 자체보다는 본인만 알아볼 수 있는 힌트를 적어 두는 것을 권장해요."},{"id":"email-recovery","label":"2단계 인증·복구 수단","type":"text","hint":"복구용 휴대폰 번호, 백업 이메일, 인증 앱 등을 적어 두세요."},{"id":"email-notes","label":"메모","type":"text","wide":true}]}]},{"id":"social-media","title":"소셜 미디어","note":"어떤 계정을 쓰는지 목록만 있어도 가족이 추모 계정 전환이나 탈퇴 처리를 할 수 있어요. 비밀번호는 힌트만 적어 두세요.","groups":[{"title":"계정 목록","note":"가입 방법에는 '카카오 계정 연동', '휴대폰 번호 가입'처럼 로그인 방식을 적어 두면 좋아요.","table":{"columns":["서비스","아이디·계정","가입 방법","비밀번호 힌트","메모"],"rows":3,"presets":["카카오톡","인스타그램","유튜브","네이버 블로그·카페","밴드","페이스북","X(트위터)","틱톡","디스코드"]},"id":"t0"}]},{"id":"website-logins","title":"웹사이트 로그인","note":"가족 한 사람당 한 장씩, 자주 쓰는 사이트를 정리해 두세요. 비밀번호는 힌트나 보관 위치만 적는 것을 권장해요.","repeat":true,"addLabel":"+ 사람 추가","cardLabel":"이름","groups":[{"title":"사용자","fields":[{"id":"login-owner","label":"이름","type":"text"}]},{"title":"자주 쓰는 사이트","table":{"columns":["사이트·앱","아이디(이메일)","비밀번호 힌트","메모"],"rows":4,"presets":["쿠팡","배달의민족","네이버페이","정부24","홈택스"]},"id":"t1"}]},{"id":"cell-phone","title":"휴대폰","note":"휴대폰이 잠기면 그 안의 사진과 기록도 함께 잠겨요. 잠금 해제 힌트를 꼭 남겨 두세요.","repeat":true,"addLabel":"+ 휴대폰 추가","cardLabel":"사용자","groups":[{"title":"기본 정보","fields":[{"id":"phone-user","label":"사용자","type":"text"},{"id":"phone-model","label":"기종","type":"text","hint":"예: 갤럭시 S24, 아이폰 15"},{"id":"phone-number","label":"전화번호","type":"text"},{"id":"phone-carrier","label":"통신사","type":"select","options":["SKT","KT","LG U+","알뜰폰","기타"]},{"id":"phone-carrier-detail","label":"알뜰폰 통신사명(해당 시)","type":"text"}]},{"title":"잠금·계정","fields":[{"id":"phone-lock-type","label":"잠금 방식","type":"select","options":["패턴","PIN(숫자)","비밀번호","지문·얼굴 인식(보조 PIN 있음)"]},{"id":"phone-lock-hint","label":"잠금 힌트","type":"text","sensitive":true,"hint":"패턴·PIN 자체보다는 본인만 알아볼 수 있는 힌트를 적어 두는 것을 권장해요."},{"id":"phone-samsung-account","label":"삼성 계정","type":"text"},{"id":"phone-google-account","label":"구글 계정","type":"text"},{"id":"phone-apple-account","label":"애플 계정(Apple ID)","type":"text"},{"id":"phone-account-hint","label":"계정 비밀번호 힌트","type":"text","sensitive":true,"hint":"비밀번호 자체보다는 힌트나 보관 위치를 적어 두는 것을 권장해요."},{"id":"phone-notes","label":"메모","type":"textarea","wide":true}]}]},{"id":"codes-locks","title":"비밀번호·잠금장치","note":"집과 기기의 잠금 정보예요. 모두 민감한 정보이니 힌트 위주로 적고, 이 노트의 보관에도 신경 써 주세요.","groups":[{"title":"집 출입","note":"번호 자체보다는 힌트를 적어 두는 것을 권장해요. 예: '결혼기념일 네 자리'","fields":[{"id":"entrance-code","label":"공동현관 비밀번호","type":"text","sensitive":true},{"id":"doorlock-code","label":"현관 도어락","type":"text","sensitive":true},{"id":"other-locks","label":"기타 잠금(창고·자전거 등)","type":"text","sensitive":true,"wide":true}]},{"title":"금고","fields":[{"id":"safe-location","label":"금고 위치","type":"text"},{"id":"safe-code-hint","label":"여는 방법·비밀번호 힌트","type":"text","sensitive":true,"hint":"비밀번호 자체보다는 힌트나 보관 위치를 적어 두는 것을 권장해요."}]},{"title":"와이파이","fields":[{"id":"wifi-ssid","label":"와이파이 이름(SSID)","type":"text"},{"id":"wifi-password","label":"와이파이 비밀번호","type":"text","sensitive":true},{"id":"router-admin","label":"공유기 관리자 비밀번호","type":"text","sensitive":true,"hint":"공유기 설정 페이지에 들어갈 때 필요해요."}]},{"title":"컴퓨터·태블릿","table":{"columns":["기기","사용자","잠금 방식","비밀번호 힌트","메모"],"rows":3},"id":"t3"},{"title":"홈 CCTV·홈캠","fields":[{"id":"cctv-service","label":"업체·앱","type":"text"},{"id":"cctv-account","label":"계정","type":"text"},{"id":"cctv-password-hint","label":"비밀번호 힌트","type":"text","sensitive":true},{"id":"cctv-notes","label":"메모","type":"text","wide":true,"hint":"카메라 위치와 대수를 적어 두면 좋아요."}]}]},{"id":"security-questions","title":"보안 질문·답변","note":"계정을 복구할 때 자주 묻는 보안 질문이에요. 실제 답 대신 본인만 알아볼 수 있는 힌트로 적어 두는 것이 안전해요.","repeat":true,"addLabel":"+ 사람 추가","cardLabel":"이름","groups":[{"title":"사용자","fields":[{"id":"sq-owner","label":"이름","type":"text"}]},{"title":"질문·답 힌트","table":{"columns":["질문","답 힌트"],"rows":3,"presets":["기억에 남는 추억의 장소는?","자신의 보물 제1호는?","어머니의 성함은?","출신 초등학교 이름은?","첫 반려동물의 이름은?"]},"id":"t1"}]}]},{"id":"contacts","title":"주요 연락처","icon":"📞","pages":[{"id":"family-contacts","title":"가족·친척 연락처","note":"급할 때 바로 연락할 가족과 친척을 적어 두세요. 관계와 주소까지 있으면 가족이 대신 연락하기 훨씬 수월해요.","repeat":true,"addLabel":"+ 연락처 추가","cardLabel":"이름","groups":[{"title":"연락처 정보","fields":[{"id":"name","label":"이름","type":"text"},{"id":"relationship","label":"관계·호칭","type":"text","hint":"예: 큰이모, 사촌 형"},{"id":"mobile","label":"휴대폰","type":"text"},{"id":"home-phone","label":"집 전화(선택)","type":"text"},{"id":"email","label":"이메일","type":"text"},{"id":"address","label":"주소","type":"text","wide":true},{"id":"memo","label":"메모","type":"textarea","wide":true}]}]},{"id":"friend-contacts","title":"친구·지인 연락처","note":"가족이 미처 모를 수 있는 친한 친구와 지인을 적어 두면, 만일의 상황에 소식을 전할 수 있어요.","repeat":true,"addLabel":"+ 연락처 추가","cardLabel":"이름","groups":[{"title":"연락처 정보","fields":[{"id":"name","label":"이름","type":"text"},{"id":"relationship","label":"관계·알게 된 사이","type":"text","hint":"예: 대학 동기, 동호회 친구"},{"id":"mobile","label":"휴대폰","type":"text"},{"id":"home-phone","label":"집 전화(선택)","type":"text"},{"id":"email","label":"이메일","type":"text"},{"id":"address","label":"주소","type":"text","wide":true},{"id":"memo","label":"메모","type":"textarea","wide":true}]}]},{"id":"professional-contacts","title":"직장·업무 연락처","note":"변호사, 세무사, 거래처 담당자처럼 일과 관련해 꼭 알아야 할 사람들을 정리해 두세요.","repeat":true,"addLabel":"+ 연락처 추가","cardLabel":"이름","groups":[{"title":"연락처 정보","fields":[{"id":"title","label":"구분·직함","type":"text","hint":"예: 변호사, 세무사, 거래처 담당자"},{"id":"name","label":"이름","type":"text"},{"id":"company","label":"회사·소속","type":"text"},{"id":"phone","label":"전화·휴대폰","type":"text"},{"id":"email","label":"이메일","type":"text"},{"id":"website","label":"웹사이트","type":"text"},{"id":"sns","label":"링크드인·SNS","type":"text"},{"id":"address","label":"주소","type":"text","wide":true},{"id":"memo","label":"메모","type":"textarea","wide":true}]}]},{"id":"healthcare-contacts","title":"병원·의료 연락처","note":"다니는 병원과 의료진을 적어 두세요. 진료 시간까지 있으면 급할 때 헛걸음을 줄일 수 있어요.","repeat":true,"addLabel":"+ 연락처 추가","cardLabel":"이름","groups":[{"title":"연락처 정보","fields":[{"id":"title","label":"구분","type":"text","hint":"예: 내과 주치의, 치과, 물리치료사"},{"id":"name","label":"이름(의료진)","type":"text"},{"id":"hospital","label":"병원·기관 이름","type":"text"},{"id":"office-phone","label":"전화(진료실·접수)","type":"text"},{"id":"mobile","label":"휴대폰(선택)","type":"text"},{"id":"email","label":"이메일","type":"text"},{"id":"address","label":"주소","type":"text","wide":true},{"id":"hours","label":"진료 시간","type":"text"},{"id":"memo","label":"메모","type":"textarea","wide":true}]}]},{"id":"school-contacts","title":"학교·기관 연락처","note":"아이의 학교·어린이집·학원, 다니는 복지관이나 기관의 연락처를 정리해 두세요.","repeat":true,"addLabel":"+ 연락처 추가","cardLabel":"이름","groups":[{"title":"연락처 정보","fields":[{"id":"title","label":"구분·직함","type":"text","hint":"예: 담임 선생님, 행정실, 원장님"},{"id":"name","label":"이름","type":"text"},{"id":"org","label":"학교·기관 이름","type":"text"},{"id":"office-phone","label":"전화","type":"text"},{"id":"mobile","label":"휴대폰(선택)","type":"text"},{"id":"email","label":"이메일","type":"text"},{"id":"address","label":"주소","type":"text","wide":true},{"id":"hours","label":"운영 시간","type":"text"},{"id":"memo","label":"메모","type":"textarea","wide":true}]}]},{"id":"emergency-contacts","title":"긴급 연락처","note":"긴급 상황에 바로 걸 수 있는 번호들이에요. 관리사무소·도시가스처럼 우리 집에 해당하는 번호를 채워 두세요.","groups":[{"title":"긴급 전화번호","note":"앞쪽 번호는 전국 공통이에요. 빈 행에는 자주 쓰는 번호를 추가해 주세요.","table":{"columns":["기관","전화번호","메모"],"rows":4,"presets":["경찰 신고 (112)","화재·구조·구급 (119)","정부민원 콜센터 (110)","전기 고장 신고 (한국전력 123)","수도 고장 신고 (상수도 121)","지역 도시가스 고객센터","한국가스안전공사 (1544-4500)","아파트 관리사무소","경비실"]},"id":"t0"}]}]},{"id":"documents","title":"중요 문서","icon":"📄","pages":[{"id":"document-locations","title":"중요 문서 보관 위치","note":"서류가 어디 있는지 아는 것만으로도 가족의 수고가 크게 줄어요. 보관 위치가 바뀌면 잊지 말고 고쳐 주세요.","groups":[{"title":"문서별 보관 위치","table":{"columns":["문서","보관 위치","메모"],"rows":6,"presets":["주민등록증","운전면허증","여권","가족관계증명서 (발급 방법 메모)","기본증명서·혼인관계증명서","인감도장","인감증명서·본인서명사실확인서","등기권리증(집문서)","임대차계약서","자동차등록증","보험증권","통장·계좌 관련 서류","유언장","공동인증서 (백업 위치)","자격증·졸업증명서","병적증명서","연금 관련 서류","진료 기록·건강검진 결과","반려동물 등록 서류"]},"id":"t0"},{"title":"사본·백업","note":"원본과 별도로 사본을 한 벌 마련해 두면 화재나 분실에도 안심이에요.","fields":[{"id":"digital-backup","label":"디지털 사본 보관 위치","type":"text","hint":"클라우드·USB 등. 접근 방법 힌트도 함께 적어 두세요.","wide":true},{"id":"physical-backup","label":"실물 사본·금고 위치","type":"text","wide":true},{"id":"memo","label":"메모","type":"textarea","wide":true}]}]},{"id":"documents-checklist","title":"가족별 서류 준비 체크","note":"가족 한 사람마다 카드 하나씩 만들어, 준비된 서류에 체크해 보세요. 해당 없는 항목은 건너뛰면 돼요.","repeat":true,"addLabel":"+ 가족 추가","cardLabel":"이름","groups":[{"title":"누구의 서류인가요","fields":[{"id":"name","label":"이름","type":"text"},{"id":"storage","label":"이 사람 서류를 모아 둔 곳","type":"text","wide":true}]},{"title":"신분·기본 서류","fields":[{"id":"id-docs","label":"준비된 서류","type":"checks","options":["주민등록증","운전면허증","여권","가족관계증명서","기본증명서","주민등록등본·초본"],"wide":true}]},{"title":"금융 서류","fields":[{"id":"finance-docs","label":"준비된 서류","type":"checks","options":["통장·계좌 목록","세금 신고 자료(홈택스)","대출 계약 서류","증권·투자 서류","연금 서류(국민·퇴직·개인연금)"],"wide":true}]},{"title":"건강·의료 서류","fields":[{"id":"medical-docs","label":"준비된 서류","type":"checks","options":["진료 기록·병력 정리","복용 약·처방전 정보","건강보험 관련 서류","예방접종 기록","건강검진 결과"],"wide":true}]},{"title":"법률·상속 서류","fields":[{"id":"legal-docs","label":"준비된 서류","type":"checks","options":["유언장","위임장","사전연명의료의향서","상속 관련 서류","보험 수익자 지정 확인"],"wide":true}]},{"title":"학력·자격 서류","fields":[{"id":"edu-docs","label":"준비된 서류","type":"checks","options":["졸업증명서·성적증명서","자격증·면허증"],"wide":true}]},{"title":"직장·소득 서류","fields":[{"id":"work-docs","label":"준비된 서류","type":"checks","options":["근로계약서","급여명세서","퇴직금·퇴직연금 서류","경력증명서"],"wide":true}]},{"title":"부동산·주거 서류","fields":[{"id":"property-docs","label":"준비된 서류","type":"checks","options":["등기권리증","임대차계약서","매매계약서","재산세 등 세금 서류"],"wide":true}]},{"title":"보험 서류","fields":[{"id":"insurance-docs","label":"준비된 서류","type":"checks","options":["생명보험 증권","실손·건강보험 증권","자동차보험 증권","화재·주택보험 증권"],"wide":true}]},{"title":"해외 관련(해당 시)","fields":[{"id":"overseas-docs","label":"준비된 서류","type":"checks","options":["비자·체류 자격 서류","해외 계좌·자산 서류","국제운전면허증"],"wide":true}]},{"title":"기타 메모","fields":[{"id":"memo","label":"그 밖에 챙겨 둔 서류·메모","type":"textarea","wide":true}]}]}]},{"id":"emergency","title":"비상 대비","icon":"🚨","pages":[{"id":"emergency-basics","title":"비상시 알아둘 것","note":"긴급할 때는 112(경찰)·119(소방·구급)예요. 행정안전부 '안전디딤돌' 앱을 설치하고 국민재난안전포털을 즐겨찾기해 두면 재난 문자와 대피소 정보를 빠르게 확인할 수 있어요.","groups":[{"title":"기본 대비 체크리스트","fields":[{"id":"basic-checks","label":"준비된 것에 체크해 보세요","type":"checks","options":["가족 모두 112·119 이용법 알기","안전디딤돌 앱 설치","국민재난안전포털에서 우리 동네 대피소 확인","소화기 비치·사용법 익히기","주택용 화재감지기 설치·점검","가스·수도·전기 차단 방법 익히기","비상용품 가방 준비","가족 집결 장소 정하기","심폐소생술(CPR) 배워 두기","중요 서류 사본을 방수 파일에 보관","이웃과 비상연락망 만들기"],"wide":true}]},{"title":"재난별 우리 집 행동 요령","note":"예: 지진 땐 탁자 아래로 몸을 피했다가, 흔들림이 멈추면 가스·전기를 차단하고 엘리베이터 대신 계단으로 대피해요.","table":{"columns":["재난 유형","우리 집 행동 요령"],"rows":2,"presets":["지진","태풍·호우(침수)","화재","정전"]},"id":"t1"}]},{"id":"emergency-info","title":"비상 정보 카드","note":"한 장으로 보는 비상 연락 카드예요. 인쇄해서 냉장고나 현관 안쪽에 붙여 두어도 좋아요.","groups":[{"title":"본인 정보","fields":[{"id":"name","label":"이름","type":"text"},{"id":"mobile","label":"휴대폰","type":"text"},{"id":"work-phone","label":"직장 전화","type":"text"},{"id":"email","label":"이메일","type":"text"},{"id":"address","label":"주소","type":"text","wide":true}]},{"title":"비상 연락처","note":"가족 외에 가까운 이웃도 한 명 넣어 두면 좋아요.","table":{"columns":["이름","관계","휴대폰","메모"],"rows":3},"id":"t1"},{"title":"자주 가는 병원·기관","table":{"columns":["구분","이름·기관","전화번호"],"rows":2,"presets":["단골 병원(주치의)","소아과","치과","안과","약국","동물병원","관리사무소·경비실"]},"id":"t2"},{"title":"건강보험·의료 메모","fields":[{"id":"insurer","label":"실손·건강보험 회사","type":"text"},{"id":"policy-no","label":"증권번호","type":"text"},{"id":"allergies","label":"알레르기","type":"text","wide":true},{"id":"medications","label":"복용 중인 약","type":"text","wide":true},{"id":"memo","label":"메모","type":"textarea","wide":true}]}]},{"id":"home-info","title":"우리 집 비상 정보","note":"가스·전기·수도를 어디서 잠그는지 가족 모두가 알고 있어야 해요. 위치를 적고, 한 번씩 직접 확인해 보세요.","groups":[{"title":"차단·안전 설비 위치","fields":[{"id":"gas-valve","label":"가스 밸브 위치","type":"text","hint":"중간밸브와 메인밸브 모두 적어 두세요."},{"id":"breaker","label":"두꺼비집(분전함) 위치","type":"text"},{"id":"water-valve","label":"수도 계량기·밸브 위치","type":"text"},{"id":"fire-extinguisher","label":"소화기 위치","type":"text"},{"id":"smoke-detector","label":"화재감지기 위치","type":"text"},{"id":"escape-equipment","label":"완강기·대피 공간","type":"text","hint":"완강기, 경량칸막이, 대피공간 위치 등"},{"id":"gas-mask","label":"방독면·마스크 보관 위치","type":"text"},{"id":"first-aid-kit","label":"구급상자 위치","type":"text"}]},{"title":"비상시 챙길 것","fields":[{"id":"emergency-cash","label":"비상 현금 보관 위치","type":"text","sensitive":true,"hint":"정확한 위치보다는 가족만 알아볼 힌트로 적는 것을 권장해요."},{"id":"safe-hint","label":"금고 위치·여는 방법 힌트","type":"text","sensitive":true,"hint":"비밀번호 자체보다는 힌트나 보관 위치를 적어 두는 것을 권장해요."},{"id":"exit-route","label":"비상 대피로·비상구","type":"text","wide":true},{"id":"safe-spot","label":"집 안에서 가장 안전한 곳","type":"text","wide":true},{"id":"memo","label":"메모","type":"textarea","wide":true}]}]},{"id":"supplies-kit","title":"비상용품 가방","note":"재난 시 최소 3일을 버틸 수 있게 준비하는 게 기본이에요. 준비된 것부터 체크하고, 유통기한은 1년에 한두 번 점검해 주세요.","groups":[{"title":"비상용품 체크리스트","fields":[{"id":"kit-items","label":"준비된 물품","type":"checks","options":["생수 (1인 하루 2L, 3일분)","비상식량 (즉석밥·통조림·에너지바 등)","손전등·여분 건전지","보조배터리·충전 케이블","휴대용 라디오","상비약·처방약 여유분","구급상자","마스크 (KF94·N95)","호루라기","담요·침낭","여벌 옷·운동화","세면도구·물티슈","위생용품 (생리대·기저귀 등)","현금 (소액권)","신분증·중요 서류 사본 (방수 팩)","여분 열쇠 (집·차)","멀티툴·맥가이버칼","라이터·성냥","장갑·우비","반려동물 용품 (사료·목줄·약)","아기 용품 (분유·이유식·기저귀)","가족 연락처 메모·비상 계획 사본"],"wide":true}]},{"title":"보관 정보","fields":[{"id":"location","label":"보관 위치","type":"text","hint":"현관 근처처럼 바로 들고 나갈 수 있는 곳이 좋아요.","wide":true},{"id":"last-check","label":"마지막 점검일","type":"date"},{"id":"memo","label":"메모","type":"textarea","wide":true}]}]},{"id":"emergency-spots","title":"대피 장소·집결 장소","note":"가까운 대피소는 안전디딤돌 앱이나 국민재난안전포털에서 확인할 수 있어요. 가족 모두가 알 수 있게 함께 정해 두세요.","groups":[{"title":"집 안 안전한 곳","fields":[{"id":"home-spot","label":"장소·설명","type":"text","wide":true},{"id":"home-when","label":"언제 가나요","type":"text","hint":"예: 지진으로 흔들리는 동안"}]},{"title":"가까운 대피소","fields":[{"id":"shelter-name","label":"이름","type":"text","hint":"예: ○○초등학교, 주민센터"},{"id":"shelter-address","label":"주소","type":"text","wide":true},{"id":"shelter-when","label":"언제 가나요","type":"text"}]},{"title":"이웃·지인 집","fields":[{"id":"neighbor-name","label":"이름","type":"text"},{"id":"neighbor-phone","label":"연락처","type":"text"},{"id":"neighbor-address","label":"주소","type":"text","wide":true},{"id":"neighbor-when","label":"언제 가나요","type":"text"}]},{"title":"가족 집결 장소 1차 (집 근처)","fields":[{"id":"meet1-desc","label":"장소·설명","type":"text","wide":true},{"id":"meet1-address","label":"주소","type":"text","wide":true},{"id":"meet1-when","label":"언제 가나요","type":"text"}]},{"title":"가족 집결 장소 2차 (동네 밖)","fields":[{"id":"meet2-desc","label":"장소·설명","type":"text","hint":"집 근처로 모일 수 없을 때를 대비한 곳이에요.","wide":true},{"id":"meet2-address","label":"주소","type":"text","wide":true},{"id":"meet2-when","label":"언제 가나요","type":"text"}]},{"title":"그 밖의 안전한 곳","table":{"columns":["장소","주소","언제 가면 좋은지"],"rows":3},"id":"t5"}]},{"id":"car-emergency","title":"차량 비상 대비","note":"차에도 작은 비상 가방을 하나 두면 고장·사고·폭설 같은 상황에 큰 도움이 돼요.","groups":[{"title":"차량 안전 점검","fields":[{"id":"safety-checks","label":"점검한 항목","type":"checks","options":["타이어 상태·공기압","브레이크","전조등·브레이크등 등 등화류","배터리","엔진오일·냉각수","와이퍼·워셔액","블랙박스 작동 확인","안전벨트","차량용 소화기","에어컨·히터 필터"],"wide":true}]},{"title":"차량 비상용품","fields":[{"id":"car-kit","label":"준비된 물품","type":"checks","options":["안전삼각대","야광(반사) 조끼","점프 케이블·점프 스타터","견인 로프","스페어타이어·타이어 수리 키트","공기압 게이지","손전등·건전지","담요","생수·간단한 간식","구급상자","휴대폰 충전기·보조배터리","작업용 장갑","우비","소액 현금","겨울용: 성에 제거기·스노우체인"],"wide":true}]},{"title":"보관·연락 정보","fields":[{"id":"kit-location","label":"비상용품 보관 위치","type":"text","hint":"예: 트렁크 왼쪽 수납함"},{"id":"roadside","label":"보험사 긴급출동 번호","type":"text"},{"id":"memo","label":"메모","type":"textarea","wide":true}]}]},{"id":"emergency-plan","title":"비상시 행동 계획","note":"상황이 닥치면 생각할 시간이 없어요. 미리 역할을 나눠 두면 누구든 헤매지 않고 움직일 수 있어요.","groups":[{"title":"어떤 상황에 대비하나요","fields":[{"id":"types","label":"대비할 상황","type":"text","hint":"예: 지진, 화재, 태풍·침수","wide":true},{"id":"description","label":"상황 설명","type":"textarea","wide":true}]},{"title":"가족 역할 분담","note":"아이 챙기기, 반려동물 챙기기, 가스 잠그기처럼 구체적으로 나눠 두세요.","table":{"columns":["누가","무엇을 하나요"],"rows":6},"id":"t1"},{"title":"집결 장소","fields":[{"id":"meeting-spot","label":"만나는 곳","type":"text","hint":"'대피 장소·집결 장소' 페이지와 맞춰 두세요.","wide":true}]},{"title":"화재 대피 계획","fields":[{"id":"main-route","label":"주 대피로","type":"text","wide":true},{"id":"alt-route","label":"보조 대피로","type":"text","wide":true},{"id":"fire-equipment","label":"소화기·완강기 위치","type":"text"},{"id":"fire-meet","label":"대피 후 만나는 곳","type":"text"},{"id":"drill-date","label":"대피 연습한 날","type":"date"}]},{"title":"기타 메모","fields":[{"id":"memo","label":"그 밖에 알아둘 것","type":"textarea","wide":true}]}]},{"id":"emergency-checklist","title":"비상 체크리스트","note":"'태풍 예보가 오면', '정전되면'처럼 상황 하나마다 카드 하나씩 만들어 보세요.","repeat":true,"addLabel":"+ 상황 추가","cardLabel":"상황","groups":[{"title":"상황","fields":[{"id":"situation","label":"상황","type":"text","hint":"예: 태풍 예보, 지진 발생, 정전","wide":true}]},{"title":"해야 할 일","table":{"columns":["순서","할 일"],"rows":8},"id":"t1"},{"title":"챙길 물건","table":{"columns":["물건","보관 위치"],"rows":8},"id":"t2"}]}]},{"id":"property","title":"부동산·자산","icon":"🏠","pages":[{"id":"property-profile","title":"부동산 정보","note":"집·상가·토지 등 부동산 하나마다 카드 하나씩 작성해 주세요. 전·월세라도 보증금과 계약 정보는 꼭 남겨 두는 게 좋아요.","repeat":true,"addLabel":"+ 부동산 추가","cardLabel":"이름(별칭)","groups":[{"title":"기본 정보","fields":[{"id":"nickname","label":"이름(별칭)","type":"text","hint":"예: 우리 집, 상가, 시골 땅"},{"id":"property-type","label":"부동산 종류","type":"select","options":["아파트","오피스텔","빌라·다세대","단독주택","상가·사무실","토지","기타"]},{"id":"ownership","label":"소유 형태","type":"radio","options":["자가","전세","월세","기타"]},{"id":"address","label":"주소","type":"text","wide":true},{"id":"size","label":"면적(㎡·평)","type":"text"},{"id":"acquired-date","label":"취득·계약일","type":"date"},{"id":"price","label":"매매가·보증금","type":"text"}]},{"title":"등기·계약 정보","fields":[{"id":"deed-location","label":"등기권리증 보관 위치","type":"text","hint":"자가라면 꼭 적어 두세요."},{"id":"fixed-date","label":"확정일자","type":"radio","options":["받음","안 받음","해당 없음"],"hint":"전·월세라면 보증금 보호를 위해 꼭 확인하세요."},{"id":"deposit","label":"보증금","type":"text"},{"id":"monthly-rent","label":"월세","type":"text"},{"id":"contract-end","label":"계약 만기일","type":"date"},{"id":"counterpart","label":"임대인·임차인 이름","type":"text"},{"id":"counterpart-phone","label":"임대인·임차인 연락처","type":"text"},{"id":"realtor","label":"공인중개사 연락처","type":"text"}]},{"title":"대출 정보","fields":[{"id":"lender","label":"대출 기관","type":"text"},{"id":"loan-balance","label":"대출 잔액","type":"text"},{"id":"repayment","label":"상환 방식·납부일","type":"text"},{"id":"loan-docs","label":"대출 서류 보관 위치","type":"text"}]},{"title":"관리 정보","fields":[{"id":"office-phone","label":"관리사무소 연락처","type":"text"},{"id":"mgmt-fee","label":"관리비 납부 방법","type":"text","hint":"예: 자동이체 계좌, 납부일"}]},{"title":"수리·리모델링","fields":[{"id":"renovations","label":"최근 5년 내 수리한 항목","type":"checks","options":["도배·장판","페인트","창호(샷시)","현관·문","조명","보일러","에어컨","주방(싱크대)","욕실","배관·수도","전기 공사","방수·옥상","베란다 확장"],"wide":true},{"id":"known-issues","label":"알려진 문제·수리가 필요한 곳","type":"textarea","wide":true}]},{"title":"수리 이력","table":{"columns":["날짜","내용","업체·비용"],"rows":4},"id":"t5"},{"title":"특이사항·메모","fields":[{"id":"memo","label":"메모","type":"textarea","wide":true}]}]},{"id":"home-inventory","title":"집안 물품 목록","note":"값나가는 물건 위주로 적어 두면 보험 청구나 이사, 상속 정리 때 근거 자료가 돼요. 사진을 함께 찍어 두면 더 좋아요.","groups":[{"title":"물품 목록","table":{"columns":["물품","구입가·추정 가치","영수증·보증서 위치","메모"],"rows":12},"id":"t0"}]},{"id":"numbers-codes","title":"집 관련 번호·코드","note":"현관·금고 같은 코드는 번호 자체보다 힌트나 적어 둔 곳의 위치만 남기는 것을 권장해요. 이 페이지는 특히 조심해서 관리해 주세요.","groups":[{"title":"번호·코드 목록","note":"코드 칸에는 가족만 알아볼 수 있는 힌트를 적는 것을 권장해요.","table":{"columns":["구분","위치","코드·힌트"],"rows":5,"presets":["공동현관","세대 현관(도어록)","우편함","무인택배함","창고·베란다 잠금","금고","차량"]},"id":"t0"}]},{"id":"devices","title":"기기·전자제품 정보","note":"컴퓨터·태블릿·공유기 같은 기기를 정리해 두세요. 잠금 코드는 비밀번호 자체보다 힌트나 보관 위치로 남기는 것을 권장해요.","groups":[{"title":"기기 목록","table":{"columns":["기기 이름","설명·용도","잠금·코드 힌트"],"rows":10},"id":"t0"}]},{"id":"estate-custodians","title":"자산을 맡길 사람들","note":"만일의 상황에 내 재산과 일을 맡아 줄 사람을 역할별로 정해 두세요. 위임장·유언장 같은 근거 서류가 있다면 보관 위치도 함께 적어 주세요.","repeat":true,"addLabel":"+ 담당자 추가","cardLabel":"이름","groups":[{"title":"담당자 정보","fields":[{"id":"role","label":"역할","type":"select","options":["유언집행자","미성년 자녀 후견인","재산 관리 위임(임의후견 등)","의료 결정 대리(연명의료 등)","디지털 계정 정리 담당","법률 자문(변호사·법무사)","재무 자문(세무사·재무설계사)","기타"]},{"id":"name","label":"이름","type":"text"},{"id":"relationship","label":"관계","type":"text"},{"id":"organization","label":"소속","type":"text","hint":"법무법인·회사 등 (해당 시)"},{"id":"mobile","label":"휴대폰","type":"text"},{"id":"email","label":"이메일","type":"text"},{"id":"duties","label":"맡길 일","type":"textarea","wide":true},{"id":"docs-location","label":"관련 서류 보관 위치","type":"text","hint":"위임장·유언장 등","wide":true},{"id":"memo","label":"메모","type":"textarea","wide":true}]}]}]},{"id":"business","title":"사업","icon":"🏢","pages":[{"id":"business-overview","title":"사업 개요","note":"가족이 이 사업의 큰 그림을 이해할 수 있도록 기본 정보를 적어 두세요. 사업을 하지 않는다면 이 섹션은 건너뛰어도 괜찮아요.","groups":[{"title":"기본 정보","fields":[{"id":"biz-name","label":"상호(사업체 이름)","type":"text"},{"id":"biz-reg-no","label":"사업자등록번호","type":"text"},{"id":"owner-name","label":"대표자 이름","type":"text"},{"id":"open-date","label":"개업일","type":"date"},{"id":"biz-form","label":"사업자 구분","type":"radio","options":["개인사업자(일반과세)","개인사업자(간이과세)","법인","프리랜서·기타"]},{"id":"biz-category","label":"업태","type":"text","hint":"예: 도소매, 음식점업, 서비스업"},{"id":"biz-item","label":"종목(업종)","type":"text","hint":"예: 전자상거래, 한식, 소프트웨어 개발"},{"id":"employee-count","label":"직원 수","type":"text"}]},{"title":"사업장·연락처","fields":[{"id":"biz-address","label":"사업장 주소","type":"text","wide":true},{"id":"biz-phone","label":"사업장 전화","type":"text"},{"id":"biz-email","label":"대표 이메일","type":"text"},{"id":"website","label":"홈페이지·온라인몰","type":"text"},{"id":"sns","label":"SNS·플레이스 계정","type":"text","hint":"인스타그램, 네이버 스마트플레이스 등"}]},{"title":"사업 소개","fields":[{"id":"products","label":"주요 상품·서비스","type":"textarea","wide":true},{"id":"about","label":"사업 소개","type":"textarea","wide":true,"hint":"어떤 사업인지, 어떻게 돌아가는지 가족에게 설명하듯 적어 주세요"}]}]},{"id":"business-tax","title":"세무·홈택스","note":"세금 신고와 정산은 담당 세무사와 홈택스 계정만 알아도 절반은 해결돼요.","groups":[{"title":"홈택스 계정","fields":[{"id":"hometax-id","label":"홈택스 아이디","type":"text","sensitive":true,"hint":"비밀번호 자체보다는 힌트나 보관 위치를 적어두는 것을 권장해요."},{"id":"hometax-hint","label":"비밀번호 힌트·보관 위치","type":"text","sensitive":true},{"id":"cert-location","label":"공동인증서(사업용) 보관 위치","type":"text","hint":"예: 사무실 컴퓨터, USB, 은행 앱"}]},{"title":"세무 대리인","fields":[{"id":"tax-agent-name","label":"세무사 이름","type":"text"},{"id":"tax-office","label":"세무사무소","type":"text"},{"id":"tax-agent-phone","label":"연락처","type":"text"},{"id":"bookkeeping","label":"기장 여부·비용","type":"text","hint":"예: 매월 기장 의뢰, 월 10만 원"}]},{"title":"신고 일정 메모","fields":[{"id":"tax-schedule","label":"세금 신고 메모","type":"textarea","wide":true,"hint":"부가세(1월·7월), 종합소득세(5월) 등 신고 일정과 주의할 점"}]}]},{"id":"business-partners","title":"주요 거래처","note":"돈이 오가는 거래처, 꼭 알아야 할 거래처를 한 곳씩 적어 두세요.","repeat":true,"addLabel":"+ 거래처 추가","cardLabel":"거래처명","groups":[{"title":"거래처 정보","fields":[{"id":"partner-name","label":"거래처명","type":"text"},{"id":"contact-person","label":"담당자","type":"text"},{"id":"phone","label":"연락처","type":"text"},{"id":"email","label":"이메일","type":"text"},{"id":"business-desc","label":"거래 내용","type":"text","wide":true,"hint":"예: 원자재 납품, 온라인몰 위탁판매"},{"id":"terms","label":"정산 조건","type":"text","hint":"예: 월말 정산, 선입금"},{"id":"memo","label":"메모","type":"textarea","wide":true}]}]},{"id":"business-people","title":"직원·동업자","note":"함께 일하는 사람들을 적어 두세요. 급여나 지분처럼 돈이 얽힌 관계일수록 기록이 중요해요.","groups":[{"title":"동업자","fields":[{"id":"copartner-name","label":"이름","type":"text"},{"id":"copartner-phone","label":"연락처","type":"text"},{"id":"share","label":"지분·투자금","type":"text","hint":"예: 지분 40%, 투자금 5,000만 원"},{"id":"contract-location","label":"동업 계약서 보관 위치","type":"text"},{"id":"copartner-memo","label":"메모","type":"textarea","wide":true}]},{"title":"직원","note":"급여일, 4대보험 등 직원과 관련해 챙겨야 할 것이 있다면 메모에 적어 주세요.","table":{"columns":["이름","역할·담당","연락처","메모"],"rows":4},"id":"t1"}]},{"id":"business-finance","title":"사업 자금","note":"사업용 계좌와 카드를 정리해 두면 정산과 상속 절차가 훨씬 수월해요.","groups":[{"title":"사업용 계좌","table":{"columns":["은행","계좌번호","용도","자동이체·메모"],"rows":3},"id":"t0"},{"title":"사업용 카드","table":{"columns":["카드사","카드 이름","결제일·결제계좌","용도"],"rows":3},"id":"t1"},{"title":"자금 메모","fields":[{"id":"money-memo","label":"받을 돈·줄 돈 메모","type":"textarea","wide":true,"hint":"미수금, 미지급금, 정기 결제 등"}]}]},{"id":"business-loans","title":"사업 대출","note":"사업 대출은 상속 시 채무로 이어질 수 있어요. 남은 가족이 정확히 알 수 있게 적어 주세요.","repeat":true,"addLabel":"+ 대출 추가","cardLabel":"대출 기관","groups":[{"title":"대출 정보","fields":[{"id":"lender","label":"대출 기관","type":"text"},{"id":"product","label":"상품명","type":"text","hint":"예: 소상공인 정책자금, 신용보증기금 보증부 대출"},{"id":"amount","label":"대출 원금","type":"text"},{"id":"balance","label":"현재 잔액","type":"text"},{"id":"rate","label":"금리","type":"text"},{"id":"payment-date","label":"매월 상환일","type":"text"},{"id":"payment-account","label":"상환 계좌","type":"text"},{"id":"maturity","label":"만기일","type":"date"},{"id":"collateral","label":"담보·보증","type":"text","hint":"예: 사업장 담보, 신용보증기금 보증, 연대보증인"},{"id":"loan-memo","label":"메모","type":"textarea","wide":true}]}]},{"id":"business-lease","title":"사업장 임대 계약","note":"임대차 계약에는 보증금이 걸려 있어요. 계약서가 어디 있는지만은 꼭 남겨 주세요.","groups":[{"title":"임대차 계약","fields":[{"id":"landlord","label":"임대인 이름","type":"text"},{"id":"landlord-phone","label":"임대인 연락처","type":"text"},{"id":"deposit","label":"보증금","type":"text"},{"id":"rent","label":"월세","type":"text"},{"id":"maintenance-fee","label":"관리비","type":"text"},{"id":"period","label":"계약 기간","type":"text"},{"id":"lease-doc-location","label":"계약서 보관 위치","type":"text"},{"id":"lease-memo","label":"메모","type":"textarea","wide":true,"hint":"권리금, 원상복구 조건 등 특약이 있다면 적어 주세요"}]}]},{"id":"business-handover","title":"사업 인수인계 메모","note":"내가 갑자기 자리를 비우게 되면 이 사업을 어떻게 하면 좋을지, 가족에게 말하듯 적어 주세요.","groups":[{"title":"사업의 앞날","note":"폐업할 때는 홈택스에서 폐업 신고를 하고, 부가가치세 확정신고까지 마무리해야 해요.","fields":[{"id":"future-plan","label":"사업을 어떻게 하면 좋을까요","type":"radio","options":["정리(폐업)해 주세요","매각을 알아봐 주세요","가족이 이어가면 좋겠어요","상황에 맡길게요"]},{"id":"helper","label":"도움을 청할 사람","type":"text","hint":"이 사업을 잘 아는 사람의 이름과 연락처"}]},{"title":"인수인계 메모","fields":[{"id":"handover-memo","label":"나만 아는 사업 이야기","type":"textarea","wide":true,"hint":"거래처 관계, 일하는 노하우, 재고 처리, 받을 돈 등 나만 아는 것들"}]}]}]},{"id":"employment","title":"직장","icon":"💼","pages":[{"id":"employment-profile","title":"직장 기본 정보","note":"갑작스러운 상황에 가족이 회사와 연락할 수 있도록 기본 정보를 적어 두세요.","groups":[{"title":"회사 정보","fields":[{"id":"company","label":"회사명","type":"text"},{"id":"department","label":"부서","type":"text"},{"id":"position","label":"직급·직책","type":"text"},{"id":"employee-no","label":"사번","type":"text"},{"id":"start-date","label":"입사일","type":"date"},{"id":"employment-type","label":"고용 형태","type":"radio","options":["정규직","계약직","파견·프리랜서","기타"]},{"id":"work-address","label":"근무지 주소","type":"text","wide":true},{"id":"company-phone","label":"회사 대표 전화","type":"text"}]},{"title":"회사에서 연락할 사람","fields":[{"id":"hr-name","label":"인사팀 담당자","type":"text"},{"id":"hr-phone","label":"인사팀 연락처","type":"text"},{"id":"hr-email","label":"인사팀 이메일","type":"text"},{"id":"manager-name","label":"직속 상사 이름","type":"text"},{"id":"manager-phone","label":"직속 상사 연락처","type":"text"},{"id":"colleague","label":"도움을 청할 동료","type":"text","hint":"이름과 연락처"}]},{"title":"나만 아는 업무 정보","fields":[{"id":"work-memo","label":"업무 인수인계 메모","type":"textarea","wide":true,"hint":"진행 중인 일, 담당 업무, 회사에 알려야 할 것"}]}]},{"id":"employment-benefits","title":"급여·퇴직금·복지","note":"미지급 급여, 연차수당, 퇴직금은 남은 가족이 청구할 수 있는 소중한 권리예요.","groups":[{"title":"급여","fields":[{"id":"payday","label":"급여일","type":"text"},{"id":"salary-account","label":"급여 계좌","type":"text","hint":"은행·계좌번호"},{"id":"unpaid-memo","label":"미지급 급여·연차수당 메모","type":"textarea","wide":true,"hint":"정산되지 않은 급여나 남은 연차가 있다면 적어 주세요"}]},{"title":"4대보험","fields":[{"id":"social-insurance","label":"가입 중인 4대보험","type":"checks","options":["국민연금","건강보험","고용보험","산재보험"]}]},{"title":"퇴직금·퇴직연금","fields":[{"id":"retirement-type","label":"퇴직급여 유형","type":"radio","options":["퇴직금(일시금)","퇴직연금 DB형","퇴직연금 DC형","잘 모르겠어요"]},{"id":"retirement-bank","label":"운용 금융기관","type":"text"},{"id":"irp-account","label":"IRP 계좌","type":"text","hint":"은행·계좌번호"},{"id":"retirement-memo","label":"메모","type":"text"}]},{"title":"스톡옵션·우리사주","fields":[{"id":"stock-option","label":"보유 내용","type":"text","wide":true,"hint":"예: 스톡옵션 1,000주(2027년부터 행사 가능), 우리사주 200주"},{"id":"stock-doc-location","label":"계약서·증서 보관 위치","type":"text"}]},{"title":"회사 대출·가불","fields":[{"id":"company-loan","label":"내용","type":"text","wide":true,"hint":"사내 대출이나 가불이 있다면 금액과 상환 방식을 적어 주세요"}]}]},{"id":"employment-return","title":"사내 계정·회사 물품","note":"회사에 돌려줄 물품을 정리해 두면 가족이 회사와 마무리하기 한결 수월해요.","groups":[{"title":"사내 시스템 계정","note":"비밀번호는 적지 말고, 어떤 계정을 쓰고 있는지만 남겨 두세요.","table":{"columns":["시스템·서비스","아이디","메모"],"rows":3},"id":"t0"},{"title":"회사 지급품 반납 목록","table":{"columns":["물품","보관 위치","메모"],"rows":2,"presets":["노트북·모니터","사원증·출입카드","법인카드","업무용 휴대폰","회사 도서·비품"]},"id":"t1"}]}]},{"id":"endoflife","title":"장례·마지막 준비","icon":"🕊️","pages":[{"id":"will-inheritance","title":"유언·상속","note":"유언장이 없어도 괜찮아요. 있다면 어디에 있는지, 없다면 어떤 마음인지만 남겨 주세요.","groups":[{"title":"유언장","note":"자필 유언장은 전문을 직접 쓰고 날짜·주소·서명·날인이 있어야 효력이 있어요. 더 확실하게 하려면 공정증서 유언(공증)을 고려해 보세요.","fields":[{"id":"will-status","label":"유언장 작성 여부","type":"radio","options":["작성하지 않았어요","자필증서 유언","공정증서 유언(공증)","비밀증서 유언"]},{"id":"will-location","label":"보관 위치","type":"text"},{"id":"notary-office","label":"공증 사무소","type":"text","hint":"공정증서 유언인 경우"},{"id":"notary-phone","label":"공증 사무소 연락처","type":"text"},{"id":"executor","label":"유언집행자","type":"text","hint":"이름과 연락처"}]},{"title":"유언대용신탁","fields":[{"id":"trust-status","label":"가입 여부","type":"radio","options":["가입하지 않았어요","가입했어요"]},{"id":"trust-bank","label":"금융기관","type":"text"},{"id":"trust-manager","label":"담당자·연락처","type":"text"},{"id":"trust-doc-location","label":"계약서 보관 위치","type":"text"}]},{"title":"상속에 관한 당부","fields":[{"id":"inheritance-memo","label":"가족에게 남기는 당부","type":"textarea","wide":true,"hint":"재산을 어떻게 나누면 좋을지, 서로 다투지 않았으면 하는 마음 등"}]}]},{"id":"advance-directive","title":"사전연명의료의향서","note":"미리 등록해 두면 연명의료에 대한 내 뜻이 법적으로 존중받아요. 가까운 등록기관은 국립연명의료관리기관(lst.go.kr)에서 확인할 수 있어요.","groups":[{"title":"등록 정보","fields":[{"id":"ad-status","label":"등록 여부","type":"radio","options":["등록했어요","등록하러 갈 예정이에요","아직 생각 중이에요"]},{"id":"ad-org","label":"등록 기관","type":"text","hint":"예: 국민건강보험공단 지사, 보건소, 등록기관 지정 병원"},{"id":"ad-date","label":"등록일","type":"date"},{"id":"ad-card-location","label":"등록증(카드) 보관 위치","type":"text"}]},{"title":"내 뜻","fields":[{"id":"ad-memo","label":"연명의료에 대한 내 생각","type":"textarea","wide":true,"hint":"가족이 어려운 결정 앞에서 흔들리지 않도록, 내 뜻을 적어 주세요"}]}]},{"id":"organ-donation","title":"장기·조직 기증","note":"기증은 온전히 내 선택이에요. 어떤 선택이든 가족이 알 수 있게 남겨 두는 것이 중요해요.","groups":[{"title":"기증 희망등록","fields":[{"id":"organ-status","label":"희망등록 여부","type":"radio","options":["희망등록을 했어요","등록할 예정이에요","원하지 않아요","아직 생각 중이에요"]},{"id":"organ-org","label":"등록 기관","type":"text","hint":"예: 한국장기조직기증원, 국립장기조직혈액관리원"},{"id":"organ-date","label":"등록일","type":"date"},{"id":"organ-card-location","label":"등록증 보관 위치","type":"text"}]},{"title":"가족에게","note":"실제 기증에는 가족의 동의가 필요해요. 내 뜻을 미리 나눠 두면 가족의 결정이 한결 가벼워져요.","fields":[{"id":"organ-family-memo","label":"기증에 대한 내 마음","type":"textarea","wide":true}]},{"title":"시신 기증","fields":[{"id":"body-status","label":"신청 여부","type":"radio","options":["신청했어요","생각 중이에요","해당 없어요"]},{"id":"body-org","label":"기증 기관","type":"text","hint":"주로 대학병원 의과대학에서 받아요"},{"id":"body-doc-location","label":"관련 서류 보관 위치","type":"text"}]}]},{"id":"charities","title":"기부","note":"후원하던 단체가 있다면 남은 가족이 정리하거나 이어갈 수 있게 적어 두세요.","groups":[{"title":"후원 중인 단체","table":{"columns":["단체명","정기·일시","금액","연락처·메모"],"rows":3},"id":"t0"},{"title":"사후 기부","fields":[{"id":"legacy-giving","label":"사후 기부 희망","type":"textarea","wide":true,"hint":"남기고 싶은 기부가 있다면 단체와 마음을 함께 적어 주세요"}]}]},{"id":"bucketlist","title":"남기고 싶은 버킷리스트","note":"거창하지 않아도 좋아요. 하고 싶은 일을 하나씩 적고, 이룰 때마다 완료에 표시해 보세요.","groups":[{"title":"버킷리스트","table":{"columns":["하고 싶은 일","완료"],"rows":10},"id":"t0"}]},{"id":"family-tasks","title":"남은 가족이 처리할 일","note":"장례를 치른 뒤 가족이 챙겨야 할 행정 절차를 정리했어요. 하나씩 순서대로 따라가면 되니 너무 걱정하지 않아도 돼요.","groups":[{"title":"처리할 일 체크리스트","note":"고인의 재산과 채무는 주민센터나 정부24의 '안심상속 원스톱서비스'로 한 번에 조회할 수 있어요.","table":{"columns":["할 일","완료","메모"],"rows":3,"presets":["사망진단서 여러 통 발급받기 (7~10통 정도)","사망신고 하기 (1개월 이내, 주민센터·정부24)","안심상속 원스톱서비스 신청하기 (재산·채무 한 번에 조회)","상속포기·한정승인 검토하기 (3개월 이내, 가정법원)","상속세 신고하기 (6개월 이내, 세무서)","보험금 청구하기 (보험사별)","국민연금 유족연금·사망일시금 청구하기","직장 퇴직금·미지급 급여 정산 요청하기","휴대폰·인터넷·TV 해지하기","전기·가스·수도 등 공과금 명의 변경하기","자동차 이전 등록 또는 폐차하기","부동산 상속 등기하기","고인 명의 카드·계좌 정리하기","디지털 계정 정리하기 (SNS·이메일·클라우드)","정기결제·구독 서비스 해지하기"]},"id":"t0"}]},{"id":"funeral-checklist","title":"장례 준비 체크리스트","note":"한국의 일반적인 3일장 흐름을 기준으로 정리했어요. 상조회사에 가입되어 있다면 대부분 함께 진행해 주니, 하나씩 확인만 하면 돼요.","groups":[{"title":"장례 절차 체크리스트","table":{"columns":["할 일","완료","메모"],"rows":3,"presets":["상조회사 또는 장례식장에 연락하기","고인 모시기 (안치)","빈소 정하고 차리기","장례 일정 정하고 부고 보내기","영정사진 준비하기","수의·관 정하기","상주·상복 준비하기","입관식 하기 (보통 둘째 날)","발인·운구 하기 (보통 셋째 날)","화장 또는 매장 하기 (화장은 e하늘 장사정보시스템에서 예약)","봉안당·자연장지 등 모실 곳으로 이동하기","장례비 정산하기","조문객에게 감사 인사 전하기"]},"id":"t0"}]},{"id":"funeral-wishes","title":"장례 희망사항","note":"장례는 남은 가족이 나를 위해 치르는 마지막 의식이에요. 내 바람을 적어 두면 가족이 고민을 크게 덜 수 있어요.","groups":[{"title":"장례 형태","fields":[{"id":"funeral-type","label":"장례 형태","type":"radio","options":["3일장","2일장","가족장(가까운 가족만)","무빈소 장례(빈소 없이 간소하게)","가족에게 맡길게요"]},{"id":"burial-type","label":"화장·매장","type":"radio","options":["화장 후 봉안당","화장 후 자연장(수목장·잔디장)","화장 후 산골","매장(선산·공원묘지)","가족에게 맡길게요"]},{"id":"resting-place","label":"희망 장지·봉안 장소","type":"text","hint":"예: ○○추모공원, 선산(위치)"},{"id":"religion","label":"종교 의식","type":"select","options":["무교(일반 장례)","기독교","천주교","불교","원불교","기타"]},{"id":"religious-org","label":"종교 시설·연락처","type":"text","hint":"다니던 교회·성당·사찰 이름과 연락처"},{"id":"funeral-scale","label":"장례 규모","type":"radio","options":["가족만 조용히","가까운 지인까지","널리 알려 주세요","가족에게 맡길게요"]}]},{"title":"상조회사","fields":[{"id":"sangjo-status","label":"가입 여부","type":"radio","options":["가입했어요","가입하지 않았어요"]},{"id":"sangjo-company","label":"회사명","type":"text"},{"id":"sangjo-product","label":"상품명","type":"text"},{"id":"sangjo-payment","label":"납입 현황","type":"text","hint":"예: 월 3만 원, 60회 중 40회 납입"},{"id":"sangjo-doc-location","label":"증서 보관 위치","type":"text"},{"id":"sangjo-phone","label":"고객센터 연락처","type":"text"}]},{"title":"영정사진","fields":[{"id":"portrait-status","label":"준비 여부","type":"radio","options":["준비해 뒀어요","아직 준비하지 못했어요"]},{"id":"portrait-location","label":"보관 위치","type":"text","hint":"아직이라면, 마음에 드는 사진이 어디 있는지 적어 주세요"}]},{"title":"장례식 분위기","fields":[{"id":"funeral-music","label":"틀고 싶은 음악","type":"textarea","wide":true},{"id":"funeral-reading","label":"낭독해 주었으면 하는 글","type":"textarea","wide":true,"hint":"좋아하는 시, 성경·불경 구절, 직접 쓴 글"},{"id":"condolence-wish","label":"조의금·조화에 대한 뜻","type":"textarea","wide":true,"hint":"예: 조의금은 정중히 사양할게요 / 조화 대신 기부해 주세요"}]}]},{"id":"urgent-requests","title":"바로 부탁할 일","note":"내게 무슨 일이 생기면 가장 먼저 챙겨야 할 아이들과 반려동물, 집안일을 적어 두세요.","groups":[{"title":"자녀 돌봄","table":{"columns":["아이 이름","맡아줄 사람","관계","연락처"],"rows":2},"id":"t0"},{"title":"반려동물 돌봄","table":{"columns":["반려동물","맡아줄 사람","연락처","돌봄 메모"],"rows":2},"id":"t1"},{"title":"집·그 밖의 부탁","table":{"columns":["부탁할 일","부탁할 사람","연락처"],"rows":3},"id":"t2"}]},{"id":"notify-people","title":"부고를 알릴 사람들","note":"부고를 대신 전해 줄 사람을 한 명 정해 두면, 경황없는 가족의 짐이 크게 줄어요.","groups":[{"title":"부고 전달 부탁","fields":[{"id":"messenger-name","label":"부고 문자를 대신 보내줄 사람","type":"text"},{"id":"messenger-phone","label":"연락처","type":"text"}]},{"title":"알릴 사람들","note":"휴대폰 연락처에 저장된 이름과 같게 적어 두면 찾기 쉬워요.","table":{"columns":["이름","관계","연락처","그룹(가족·친척·친구·직장·기타)"],"rows":10},"id":"t1"}]},{"id":"final-message","title":"남기는 말","note":"격식 없이, 지금의 마음을 편하게 적어 보세요. 언제든 다시 고쳐 쓸 수 있어요.","groups":[{"title":"남기는 말","fields":[{"id":"final-message","label":"가족과 친구들에게","type":"textarea","wide":true}]}]},{"id":"letters","title":"사랑하는 사람에게 남기는 편지","note":"한 사람에게 한 통씩, 그 사람만을 위한 편지를 남겨 보세요. 고마웠던 일, 미안했던 일, 바라는 것들을요.","repeat":true,"addLabel":"+ 편지 추가","cardLabel":"받는 사람","groups":[{"title":"편지","fields":[{"id":"recipient","label":"받는 사람","type":"text"},{"id":"relation","label":"관계","type":"text"},{"id":"letter-body","label":"편지","type":"textarea","wide":true}]}]}]}];
+
+/* ---------- state ---------- */
+const APP_VERSION = '1.4.0'; /* android/app/build.gradle 의 versionName 과 함께 올린다 */
+const LS_KEY = 'manil-note-v1';
+const RELOCK_GRACE = 30000; /* 이 시간을 넘겨 앱을 떠났다 오면 다시 잠근다 */
+let _nativeIO = 0; /* 공유 시트·사진 선택 등 앱이 의도적으로 띄운 네이티브 화면이 열려 있는 동안 재잠금 보류 */
+let data = { owner:'', values:{}, instances:{}, tableRows:{}, settings:{ theme:null, hideSens:false } };
+
+/* ---------- 저장 키 구조 버전 ----------
+ * v1: sec.page[.iid].{그룹 배열 인덱스}.fieldId
+ * v2: sec.page[.iid].fieldId            (그룹 위치를 키에서 뺐다)
+ *
+ * v1은 SCHEMA의 그룹 배열 위치가 키에 박혀 있어서, 그룹을 하나 끼워 넣거나 순서를
+ * 바꾸는 순간 기존 사용자의 값이 통째로 다른 필드로 밀리거나 고아가 됐다.
+ * 필드 id는 페이지 안에서 유일하므로(740개 전수 확인) 그룹 위치는 애초에 불필요했다.
+ *
+ * 표는 필드 id가 없어서 그룹을 가리킬 무언가가 필요하다. SCHEMA의 표 그룹에 g.id를
+ * 박아뒀고(t0, t3 …), 그 값은 v1 시절의 그룹 인덱스를 그대로 굳힌 것이다.
+ * 그래서 표 키 변환도 스키마를 보지 않고 "숫자 → t숫자"로 끝난다.
+ * 이 id는 위치가 아니라 이름이다 — 그룹 순서가 바뀌어도 절대 다시 계산하지 않는다.
+ */
+const KEYS_VERSION = 2;
+
+/** 키 하나를 v1 → v2로. 스키마를 보지 않고 모양만으로 판단한다(나중에 스키마가 바뀌어도 안전) */
+function migrateKeyV2(k){
+  const p = k.split('.');
+  /* 표 셀: sec.page[.iid].{gi}.t.{row}.{col} — keyIsSensitive와 같은 'p[-3]===t' 규칙 */
+  if(p.length >= 5 && p[p.length-3] === 't'){
+    const gi = p[p.length-4];
+    if(/^\d+$/.test(gi)){ p[p.length-4] = 't'+gi; return p.join('.'); }
+    return k;
+  }
+  /* 필드: sec.page[.iid].{gi}.fieldId */
+  if(p.length >= 3 && /^\d+$/.test(p[p.length-2])){ p.splice(p.length-2, 1); return p.join('.'); }
+  return k;
+}
+
+/** data 전체를 v2로 옮긴다. 이미 v2면 아무것도 하지 않는다 */
+function migrateData(d){
+  if(!d || d._keys >= KEYS_VERSION) return d;
+  const vals = {};
+  for(const k of Object.keys(d.values||{})) vals[migrateKeyV2(k)] = d.values[k];
+  d.values = vals;
+  /* 표 행 추가 개수는 그룹 접두사가 키다: sec.page[.iid].{gi} → …{t+gi} */
+  const rows = {};
+  for(const k of Object.keys(d.tableRows||{})){
+    const p = k.split('.'); const last = p[p.length-1];
+    if(/^\d+$/.test(last)) p[p.length-1] = 't'+last;
+    rows[p.join('.')] = d.tableRows[k];
+  }
+  d.tableRows = rows;
+  d._keys = KEYS_VERSION;
+  return d;
+}
+
+try{ const raw = localStorage.getItem(LS_KEY); if(raw){ const d = migrateData(JSON.parse(raw)); data = Object.assign(data, d); data.settings = Object.assign({theme:null,hideSens:false}, d.settings||{}); for(const k of Object.keys(data.instances||{})){ if(k.startsWith('[object')) delete data.instances[k]; } } }catch(e){ console.warn('load fail', e); }
+if(!data._keys) data._keys = KEYS_VERSION;   /* 새 사용자는 처음부터 v2 */
+let saveTimer=null;
+/* 저장 실패는 반드시 눈에 보여야 한다 — .savebadge 는 560px 미만(=모든 휴대폰)에서 숨겨지므로 토스트로도 알린다 */
+function save(){ clearTimeout(saveTimer); saveTimer=setTimeout(()=>{ try{
+      localStorage.setItem(LS_KEY, JSON.stringify(data));
+      badge('자동 저장됨 '+new Date().toLocaleTimeString('ko-KR',{hour:'2-digit',minute:'2-digit'}));
+    }catch(e){
+      console.error('save fail', e);
+      badge('저장 실패');
+      toast('⚠️ 저장하지 못했어요. 기기 저장공간을 확인하고, 설정에서 백업해 두세요.');
+    } }, 350); }
+function badge(t){ const b=document.getElementById('saveBadge'); if(b) b.textContent=t; }
+function toast(t){ const el=document.getElementById('toast'); el.textContent=t; el.classList.add('show'); clearTimeout(toast._t); toast._t=setTimeout(()=>el.classList.remove('show'),2600); }
+
+/* ---------- alert/confirm 대체 ----------
+   브라우저 기본 대화상자는 앱의 서체·색을 따르지 않아 리뉴얼한 화면 위에서 혼자 튄다.
+   메시지에 오류 원문·파일 경로가 그대로 들어오므로 innerHTML이 아니라 textContent로 넣는다. */
+function dialog(msg, opts){
+  opts = opts || {};
+  const isConfirm = !!opts.confirm;
+  return new Promise(resolve=>{
+    const ov = document.createElement('div'); ov.className='askov';
+    const box = document.createElement('div'); box.className='modal';
+    if(opts.title){ const h=document.createElement('h3'); h.textContent=opts.title; box.appendChild(h); }
+    const p = document.createElement('p'); p.className='askmsg'; p.textContent = msg; box.appendChild(p);
+    const btns = document.createElement('div'); btns.className='askbtns';
+    let cancel = null;
+    if(isConfirm){
+      cancel = document.createElement('button'); cancel.className='askcancel';
+      cancel.textContent = opts.cancelText || '취소'; btns.appendChild(cancel);
+    }
+    const ok = document.createElement('button');
+    ok.className = 'askok' + (opts.danger ? ' danger' : '');
+    ok.textContent = opts.okText || (isConfirm ? '확인' : '알겠어요');
+    btns.appendChild(ok);
+    box.appendChild(btns); ov.appendChild(box); document.body.appendChild(ov);
+
+    const done = v => { document.removeEventListener('keydown', onKey, true); ov.remove(); resolve(v); };
+    function onKey(e){
+      /* 캡처 단계에서 잡아 뒤에 있는 화면의 Enter/Esc 처리로 새지 않게 한다 */
+      if(e.key==='Escape'){ e.preventDefault(); e.stopPropagation(); done(isConfirm ? false : undefined); }
+      else if(e.key==='Enter'){ e.preventDefault(); e.stopPropagation(); done(isConfirm ? true : undefined); }
+    }
+    document.addEventListener('keydown', onKey, true);
+    ok.addEventListener('click', ()=>done(isConfirm ? true : undefined));
+    if(cancel) cancel.addEventListener('click', ()=>done(false));
+    /* 바깥을 눌러 닫는 건 알림에서만. 삭제 확인에서 허용하면 오조작이 '취소'인지 '확인'인지 모호해진다 */
+    if(!isConfirm) ov.addEventListener('click', e=>{ if(e.target===ov) done(undefined); });
+    setTimeout(()=>ok.focus(), 30);
+  });
+}
+/** alert 대체 */
+function notify(msg, title){ return dialog(msg, { title: title || null }); }
+/** confirm 대체 — true/false를 준다 */
+function ask(msg, opts){ return dialog(msg, Object.assign({ confirm:true }, opts||{})); }
+
+/* ---------- helpers ---------- */
+const esc = s => String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+/* 섹션 라인 아이콘 (PANTONE 2945C 리뉴얼) */
+const ICON_P = {
+ personal:'<circle cx="12" cy="8" r="3.6"/><path d="M5 20c1.2-3.6 3.8-5.4 7-5.4s5.8 1.8 7 5.4"/>',
+ medical:'<circle cx="12" cy="12" r="8.5"/><path d="M12 8.5v7M8.5 12h7"/>',
+ insurance:'<path d="M12 3.5l7 2.6v5.4c0 4.6-2.9 7.4-7 9-4.1-1.6-7-4.4-7-9V6.1z"/>',
+ financial:'<circle cx="12" cy="12" r="8.5"/><text x="12" y="15.8" text-anchor="middle" font-size="10" font-weight="700" fill="currentColor" stroke="none">₩</text>',
+ household:'<path d="M4.5 10.5L12 4l7.5 6.5"/><path d="M6.5 9.5V20h11V9.5"/>',
+ vehicle:'<path d="M5.5 13.5l1.4-4.2A2 2 0 018.8 8h6.4a2 2 0 011.9 1.3l1.4 4.2"/><rect x="4.5" y="13.5" width="15" height="4.5" rx="1.5"/><path d="M7.5 18v1.5M16.5 18v1.5"/>',
+ online:'<circle cx="8.5" cy="12" r="3.8"/><path d="M12.3 12H20M17 12v3.2M20 12v2.4"/>',
+ contacts:'<path d="M7.5 4.5h3l1 3.8-2.1 1.4a10.5 10.5 0 004.9 4.9l1.4-2.1 3.8 1v3a2 2 0 01-2.2 2A15 15 0 015.5 6.7a2 2 0 012-2.2z"/>',
+ documents:'<path d="M7.5 3.5H14l4.5 4.5v11a1.5 1.5 0 01-1.5 1.5H7.5A1.5 1.5 0 016 19V5a1.5 1.5 0 011.5-1.5z"/><path d="M9.5 13h5M9.5 16.2h3.5"/>',
+ emergency:'<path d="M12 4.5L20.5 19h-17z"/><path d="M12 10.5v3.5"/><path d="M12 16.8v.2"/>',
+ property:'<rect x="6" y="4" width="12" height="16.5" rx="1.2"/><path d="M9.5 8h1.5M13 8h1.5M9.5 11.5h1.5M13 11.5h1.5M10.5 20.5V17h3v3.5"/>',
+ business:'<path d="M5 9l1-4.5h12L19 9"/><path d="M5.5 9v11h13V9"/><path d="M9.5 20v-5.5h5V20"/>',
+ employment:'<rect x="4.5" y="8" width="15" height="11" rx="1.6"/><path d="M9.5 8V6.4A1.6 1.6 0 0111.1 4.8h1.8a1.6 1.6 0 011.6 1.6V8M4.5 12.5h15"/>',
+ endoflife:'<path d="M20 5L4 12.2l6.2 2.3L12.6 20z"/><path d="M20 5l-9.8 9.5"/>',
+ camera:'<path d="M4.5 8.5A1.5 1.5 0 016 7h2.2l1.3-2h5l1.3 2H18a1.5 1.5 0 011.5 1.5V17a1.5 1.5 0 01-1.5 1.5H6A1.5 1.5 0 014.5 17z"/><circle cx="12" cy="12.5" r="3.2"/>'
+};
+function secIcon(id,size){ const p=ICON_P[id]; if(!p) return '<svg width="'+size+'" height="'+size+'" viewBox="0 0 24 24"></svg>'; return '<svg width="'+size+'" height="'+size+'" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">'+p+'</svg>'; }
+const nonEmpty = v => Array.isArray(v) ? v.length>0 : (v!=null && String(v).trim()!=='');
+function val(k){ return data.values[k]; }
+function setVal(k,v){ if(!nonEmpty(v)) delete data.values[k]; else data.values[k]=v; save(); }
+function countPrefix(pfx){ let n=0; for(const k in data.values){ if(k.startsWith(pfx) && nonEmpty(data.values[k])) n++; } return n; }
+function instList(sec,page){ const key=sec.id+'.'+page.id; let l=data.instances[key]; if(!l||!l.length){ l=['i1']; data.instances[key]=l; } return l; }
+/* conditional visibility (showIf on fields, showIfAny on pages) */
+function condMatch(v, equals){ const eq = Array.isArray(equals)? equals : [equals]; if(Array.isArray(v)) return v.some(x=>eq.includes(x)); return eq.includes(v); }
+function fieldVisible(f, page, pagePfx){
+  if(!f.showIf) return true;
+  return condMatch(val(pagePfx+'.'+f.showIf.field), f.showIf.equals);
+}
+function pageVisible(sec, page){
+  const c = page.showIfAny; if(!c) return true;
+  const cp = sec.pages.find(p=>p.id===c.page); if(!cp) return true;
+  const ids = cp.repeat ? (data.instances[sec.id+'.'+cp.id]||['i1']) : [null];
+  return ids.some(iid=> condMatch(val(sec.id+'.'+cp.id+(iid?'.'+iid:'')+'.'+c.field), c.equals));
+}
+function sectionControllers(sec){
+  const s = new Set();
+  for(const p of sec.pages){
+    if(p.showIfAny) s.add(p.showIfAny.field);
+    for(const g of p.groups||[]) for(const f of g.fields||[]) if(f.showIf) s.add(f.showIf.field);
+  }
+  return s;
+}
+function extraRows(pfx){ return data.tableRows[pfx]||0; }
+
+/* ---------- render ---------- */
+const app = document.getElementById('app');
+let view = { name:'home', sec:null };
+function go(v){ view=v; render(); window.scrollTo({top:0}); }
+
+function render(){
+  if(view.name==='home') renderHome(); else renderSection(view.sec);
+  applySens();
+}
+
+function renderHome(){
+  const total = Object.keys(data.values).filter(k=>nonEmpty(data.values[k])).length;
+  let h = `<div class="hero"><div class="hero-in">
+    <h1>혹시 모를 그날,<br>남겨진 가족이 헤매지 않도록.</h1>
+    <p>나와 우리 집의 모든 정보를 한곳에 정리해 두는 기록장이에요. 모든 내용은 <b>${isNative()?'이 휴대폰 안에만':'이 컴퓨터에만'}</b> 저장되고, 밖으로 전송되지 않아요. (AI 도우미에게 보낸 내용만 예외)</p>
+    <p>지금까지 <b style="color:var(--accent)">${total}개</b> 항목을 작성했어요.</p>
+    <div class="owner-line"><span>이 노트는</span><input id="ownerInput" value="${esc(data.owner)}" placeholder="이름"><span>의 기록입니다.</span></div>
+  </div></div>
+  <div class="searchwrap"><span class="sicon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="6.5"></circle><path d="M16 16l4 4"></path></svg></span><input id="searchIn" placeholder="전체 검색 — 예: 보험, 국민은행, 도어락, 유언장" autocomplete="off"><div class="sres" id="searchRes" style="display:none"></div></div>
+  <div class="emcard"><h3><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color:var(--warn)"><path d="M12 4.5L20.5 19h-17z"></path><path d="M12 10.5v3.5"></path><path d="M12 16.8v.2"></path></svg>응급 정보 요약</h3><p class="sub">위급한 순간, 가족이나 구조자가 가장 먼저 봐야 할 정보예요. 짧게 핵심만 적어두세요.</p><div class="frow">${EMFIELDS.map(f=>`<div class="fld${f.wide?' wide':''}"><label>${esc(f.label)}</label><input type="text" data-emkey="emcard.${f.id}" value="${esc(val('emcard.'+f.id))}"></div>`).join('')}</div></div>
+  <div class="grid">`;
+  for(const sec of SCHEMA){
+    const n = countPrefix(sec.id+'.');
+    h += `<div class="scard" data-sec="${sec.id}"><div class="ic">${secIcon(sec.id,22)}</div><div><div class="tt">${esc(sec.title)}</div><div class="st">${sec.pages.length}개 페이지 · ${n? `<b>${n}개 작성</b>`:'아직 비어 있어요'}</div></div></div>`;
+  }
+  h += `</div><div class="foot">비밀번호·주민등록번호 같은 민감한 정보는 그대로 적기보다 <b>힌트나 보관 위치</b>를 적어두는 걸 권장해요.<br>작성 후에는 설정의 <b>워드로 내보내기</b>로 A5 문서를 만들어 인쇄하거나 보관할 수 있어요.</div>`;
+  app.innerHTML = h;
+  document.getElementById('ownerInput').addEventListener('input', e=>{ data.owner=e.target.value; save(); });
+  app.querySelectorAll('.scard').forEach(c=>c.addEventListener('click',()=>go({name:'section',sec:c.dataset.sec})));
+  app.querySelectorAll('[data-emkey]').forEach(el=>el.addEventListener('input',()=>setVal(el.dataset.emkey, el.value)));
+  bindSearch();
+}
+
+let CUR_SEC = null;
+function renderSection(secId){
+  const sec = SCHEMA.find(s=>s.id===secId); if(!sec){ go({name:'home'}); return; }
+  CUR_SEC = secId;
+  let h = `<div class="crumb"><button id="backBtn">← 처음으로</button></div>
+  <div class="sec-head"><span class="ic">${secIcon(sec.id,24)}</span><h2>${esc(sec.title)}</h2></div>`;
+  const visPages = sec.pages.filter(p=>pageVisible(sec,p));
+  h += `<div class="chips">` + visPages.map(p=>`<a href="#pg-${p.id}">${esc(p.title)}</a>`).join('') + `</div>`;
+  for(const page of visPages){ h += renderPage(sec, page); }
+  app.innerHTML = h;
+  document.getElementById('backBtn').addEventListener('click',()=>go({name:'home'}));
+  bindSectionEvents(sec);
+}
+
+function renderPage(sec, page){
+  const pfx = sec.id+'.'+page.id;
+  const n = countPrefix(pfx+'.');
+  let inner='';
+  if(page.note) inner += `<div class="pnote">${esc(page.note)}</div>`;
+  const canPf = (page.groups||[]).some(g=>g.table || (g.fields||[]).some(f=>!f.sensitive));
+  const pfBtn = canPf ? `<button class="photofill" data-page="${page.id}" title="사진을 올리면 AI가 읽고 항목을 채워줘요">${secIcon('camera',15)} 사진으로 채우기</button>` : '';
+  if(page.repeat){
+    const list = instList(sec,page);
+    list.forEach((iid,idx)=>{ inner += renderInstance(sec,page,iid,idx,list.length); });
+    inner += `<button class="addrow add-inst" data-sec="${sec.id}" data-page="${page.id}">${esc(page.addLabel||'+ 추가')}</button>` + pfBtn;
+  }else{
+    inner += pfBtn;
+    page.groups.forEach(g=>{ inner += renderGroup(g, pfx, page); });
+  }
+  return `<details class="pagecard" id="pg-${page.id}" ${n>0?'open':''}><summary><h3>${esc(page.title)}</h3>${n>0?`<span class="cnt">${n}</span>`:''}<span class="arr">▶</span></summary><div class="pbody">${inner}</div></details>`;
+}
+
+function renderInstance(sec,page,iid,idx,total){
+  const pfx = sec.id+'.'+page.id+'.'+iid;
+  let title='';
+  if(page.cardLabel){
+    for(const g of page.groups){ const f=(g.fields||[]).find(f=>f.label===page.cardLabel); if(f){ title = val(pfx+'.'+f.id)||''; break; } }
+  }
+  let h = `<div class="inst" data-inst="${iid}"><div class="inst-head"><span class="no">${idx+1}</span><b class="inst-title">${esc(title)}</b>`;
+  if(total>1) h += `<button class="del-inst" data-sec="${sec.id}" data-page="${page.id}" data-iid="${iid}">삭제</button>`;
+  h += `</div>`;
+  page.groups.forEach(g=>{ h += renderGroup(g, pfx, page); });
+  return h+`</div>`;
+}
+
+/**
+ * pfx는 페이지(또는 반복 카드) 접두사다 — 그룹 위치는 들어가지 않는다.
+ * 필드 id가 페이지 안에서 유일하므로 그룹을 거칠 필요가 없고, 그래야 그룹을
+ * 넣거나 순서를 바꿔도 기존 값이 밀리지 않는다.
+ * 표는 필드 id가 없으니 그룹에 박아둔 g.id(고정값)를 쓴다.
+ */
+function renderGroup(g, pfx, page){
+  let h='';
+  if(g.title) h += `<div class="gtitle">${esc(g.title)}</div>`;
+  if(g.note) h += `<div class="gnote">${esc(g.note)}</div>`;
+  if(g.table) return h + renderTable(g.table, pfx+'.'+g.id);
+  if(!g.fields) return h;
+  h += `<div class="frow">`;
+  for(const f of g.fields){
+    if(page && !fieldVisible(f, page, pfx)) continue;
+    h += renderField(f, pfx+'.'+f.id);
+  }
+  return h + `</div>`;
+}
+
+function renderField(f, key){
+  const v = val(key);
+  const cls = 'fld' + (f.wide||f.type==='textarea'||f.type==='checks'?' wide':'') + (f.sensitive?' sens':'');
+  let inner='';
+  const lock = f.sensitive?`<span class="lock"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="5.5" y="10.5" width="13" height="9" rx="2"></rect><path d="M8.5 10.5V8a3.5 3.5 0 017 0v2.5"></path></svg></span>`:'';
+  if(f.type==='textarea') inner = `<textarea data-key="${key}" placeholder="">${esc(v)}</textarea>` + (CUR_SEC==='endoflife'?`<button class="aihelp" data-target="${key}">AI로 글 다듬기</button>`:'');
+  else if(f.type==='date') inner = `<input type="date" data-key="${key}" value="${esc(v)}">`;
+  else if(f.type==='select'){
+    inner = `<select data-key="${key}"><option value=""></option>` + (f.options||[]).map(o=>`<option ${v===o?'selected':''}>${esc(o)}</option>`).join('') + `</select>`;
+  }
+  else if(f.type==='radio'){
+    inner = `<div class="optwrap">` + (f.options||[]).map(o=>`<label class="opt"><input type="radio" name="r-${key}" data-key="${key}" data-type="radio" value="${esc(o)}" ${v===o?'checked':''}>${esc(o)}</label>`).join('') + `</div>`;
+  }
+  else if(f.type==='checks'){
+    const arr = Array.isArray(v)?v:[];
+    inner = `<div class="optwrap">` + (f.options||[]).map(o=>`<label class="opt"><input type="checkbox" data-key="${key}" data-type="checks" value="${esc(o)}" ${arr.includes(o)?'checked':''}>${esc(o)}</label>`).join('') + `</div>`;
+  }
+  else inner = `<input type="text" data-key="${key}" value="${esc(v)}">`;
+  return `<div class="${cls}"><label>${esc(f.label)}${lock}</label>${inner}${f.hint?`<span class="hint">${esc(f.hint)}</span>`:''}</div>`;
+}
+
+function renderTable(t, pfx){
+  const cols = t.columns||[]; const presets = t.presets||[];
+  const rows = presets.length + (t.rows||3) + extraRows(pfx);
+  let h = `<div class="twrap"><table class="g"><thead><tr>` + cols.map(c=>`<th>${esc(c)}</th>`).join('') + `</tr></thead><tbody>`;
+  for(let r=0;r<rows;r++){
+    h += `<tr>`;
+    for(let c=0;c<cols.length;c++){
+      if(r<presets.length && c===0){ h += `<td class="preset">${esc(presets[r])}</td>`; }
+      else{
+        const key = pfx+'.t.'+r+'.'+c;
+        h += `<td${t.sensitive?' class="sens-cell"':''}><input type="text" data-key="${key}" value="${esc(val(key))}"></td>`;
+      }
+    }
+    h += `</tr>`;
+  }
+  h += `</tbody></table></div><button class="addrow add-trow" data-pfx="${pfx}">+ 행 추가</button>`;
+  return h;
+}
+
+function bindSectionEvents(sec){
+  const ctrlFields = sectionControllers(sec);
+  app.querySelectorAll('[data-key]').forEach(el=>{
+    const type = el.dataset.type;
+    el.addEventListener(type==='radio'||type==='checks'?'change':'input', ()=>{
+      const key = el.dataset.key;
+      if(type==='checks'){
+        const boxes = app.querySelectorAll(`input[data-key="${CSS.escape(key)}"]`);
+        const arr=[]; boxes.forEach(b=>{ if(b.checked) arr.push(b.value); });
+        setVal(key,arr);
+      }else if(type==='radio'){ if(el.checked) setVal(key, el.value); }
+      else setVal(key, el.value);
+      const fid = key.split('.').pop();
+      if(ctrlFields.has(fid) && (type==='radio'||type==='checks'||el.tagName==='SELECT')){
+        const openIds=[...app.querySelectorAll('details[open]')].map(d=>d.id);
+        const sy=window.scrollY;
+        render();
+        openIds.forEach(id=>{ const d=document.getElementById(id); if(d) d.open=true; });
+        window.scrollTo(0,sy);
+        return;
+      }
+      const inst = el.closest('.inst');
+      if(inst){
+        const card = inst.closest('.pagecard'); const pageId = card.id.replace('pg-','');
+        const page = sec.pages.find(p=>p.id===pageId);
+        if(page && page.cardLabel){
+          const fld = el.closest('.fld');
+          /* 자물쇠는 인라인 SVG라 textContent 에 안 잡힌다 (예전 🔒 이모지 제거 코드는 삭제) */
+          if(fld && fld.querySelector('label') && fld.querySelector('label').textContent.trim()===page.cardLabel){ inst.querySelector('.inst-title').textContent = el.value; }
+        }
+      }
+    });
+  });
+  app.querySelectorAll('.add-inst').forEach(b=>b.addEventListener('click',()=>{
+    const key=b.dataset.sec+'.'+b.dataset.page; const l=data.instances[key]||['i1'];
+    let mx=0; l.forEach(id=>{ const n=parseInt(id.slice(1)); if(n>mx) mx=n; });
+    l.push('i'+(mx+1)); data.instances[key]=l; save(); render();
+    setTimeout(()=>{ const el=document.getElementById('pg-'+b.dataset.page); if(el){ el.open=true; el.scrollIntoView({block:'center'}); } },0);
+  }));
+  app.querySelectorAll('.del-inst').forEach(b=>b.addEventListener('click',async ()=>{
+    if(!await ask('이 카드를 삭제할까요? 입력한 내용도 함께 지워져요.', {danger:true, okText:'삭제'})) return;
+    const key=b.dataset.sec+'.'+b.dataset.page; const iid=b.dataset.iid;
+    data.instances[key]=(data.instances[key]||[]).filter(x=>x!==iid);
+    const vpfx=key+'.'+iid+'.';
+    for(const k of Object.keys(data.values)){ if(k.startsWith(vpfx)) delete data.values[k]; }
+    for(const k of Object.keys(data.tableRows)){ if(k.startsWith(vpfx)) delete data.tableRows[k]; }
+    save(); render();
+  }));
+  app.querySelectorAll('.aihelp').forEach(b=>b.addEventListener('click',()=>openLetterModal(b.dataset.target)));
+  app.querySelectorAll('.photofill').forEach(b=>b.addEventListener('click',()=>{
+    const pg = sec.pages.find(p=>p.id===b.dataset.page);
+    if(pg) openPhotoFillModal(sec, pg);
+  }));
+  app.querySelectorAll('.add-trow').forEach(b=>b.addEventListener('click',()=>{
+    const pfx=b.dataset.pfx; data.tableRows[pfx]=(data.tableRows[pfx]||0)+1; save();
+    const openIds=[...app.querySelectorAll('details[open]')].map(d=>d.id);
+    render();
+    openIds.forEach(id=>{ const d=document.getElementById(id); if(d) d.open=true; });
+    const d2=b.closest('details'); if(d2){ const nd=document.getElementById(d2.id); if(nd) nd.open=true; }
+  }));
+}
+
+/* ---------- top bar ---------- */
+document.getElementById('brandHome').addEventListener('click',()=>go({name:'home'}));
+function applyTheme(){
+  const t=data.settings.theme;
+  const dark = t? t==='dark' : window.matchMedia('(prefers-color-scheme: dark)').matches;
+  document.body.classList.toggle('dark',dark);
+}
+function applySens(){ document.body.classList.toggle('hide-sens', !!data.settings.hideSens); }
+
+/* backup / restore */
+/* 백업 파일에 스키마 버전을 넣어, 앞으로 항목 구조가 바뀌어도 불러올 때 판단할 수 있게 한다.
+   v2부터 값 키에서 그룹 인덱스가 빠졌다(data._keys 참고). v1 백업은 불러오면서 변환한다. */
+const SCHEMA_VERSION = 2;
+function backupPayload(){
+  return Object.assign({ _app:'manil-note', _schema:SCHEMA_VERSION, _appVersion:APP_VERSION, _exportedAt:new Date().toISOString() }, data);
+}
+async function doBackup(){
+  try{
+    const blob=new Blob([JSON.stringify(backupPayload(),null,1)],{type:'application/json'});
+    const where = await dl(blob, '만일의노트_백업_'+dstr()+'.json');
+    toast(where ? '백업했어요 — '+where : '백업을 저장하지 않았어요.');
+  }catch(err){
+    console.error('backup fail', err);
+    await notify('백업 파일을 저장하지 못했어요.\n\n'+((err&&err.message)||err)+'\n\n다시 시도해도 안 되면, 설정에서 워드로 내보내기를 이용해 주세요.', '백업 실패');
+  }
+}
+function doRestore(){ pickFile(document.getElementById('fileRestore')); }
+document.getElementById('fileRestore').addEventListener('change',e=>{
+  const f=e.target.files[0]; if(!f) return;
+  const rd=new FileReader();
+  rd.onload=async ()=>{ try{
+      const d=JSON.parse(rd.result);
+      if(!d || typeof d!=='object' || !('values' in d)) throw new Error('형식이 맞지 않아요');
+      if(d._schema && d._schema > SCHEMA_VERSION) throw new Error('더 새로운 버전의 앱에서 만든 백업이에요. 앱을 업데이트한 뒤 다시 불러와 주세요');
+      if(!await ask('백업을 불러오면 지금 화면의 내용을 백업 내용으로 바꿔요. 계속할까요?', {okText:'불러오기'})) return;
+      const base={owner:'',values:{},instances:{},tableRows:{},settings:{theme:null,hideSens:false}};
+      /* 예전 앱에서 만든 백업은 그룹 인덱스가 박힌 v1 키다 — 불러오면서 함께 옮긴다 */
+      migrateData(d);
+      data=Object.assign(base,d);
+      data.settings=Object.assign({theme:null,hideSens:false}, d.settings||{}); /* 얕은 병합이면 누락 키가 undefined가 된다 */
+      delete data._app; delete data._schema; delete data._appVersion; delete data._exportedAt;
+      data._keys = KEYS_VERSION;
+      save(); applyTheme(); applySens(); render(); toast('백업을 불러왔어요.');
+    }catch(err){ await notify('백업 파일을 읽을 수 없어요.\n\n'+((err&&err.message)||'만일의 노트에서 저장한 .json 파일인지 확인해 주세요.'), '불러오기 실패'); } };
+  rd.onerror=()=>{ notify('파일을 읽지 못했어요. 다시 시도해 주세요.', '불러오기 실패'); };
+  rd.readAsText(f); e.target.value='';
+});
+function dstr(){ const d=new Date(); return d.getFullYear()+String(d.getMonth()+1).padStart(2,'0')+String(d.getDate()).padStart(2,'0'); }
+function isNative(){ return !!(window.Capacitor && Capacitor.isNativePlatform && Capacitor.isNativePlatform()); }
+/* 시스템 파일·사진 선택기를 열면 앱이 백그라운드로 가므로, 그 사이 재잠금이 끼어들지 않게 표시해 둔다.
+   선택을 마치거나 취소해 창으로 돌아오면(focus) 해제한다. */
+function pickFile(el){
+  _nativeIO++;
+  let done = false;
+  const clear = ()=>{ if(done) return; done = true; _nativeIO--; };
+  window.addEventListener('focus', ()=>setTimeout(clear, 300), {once:true});
+  el.addEventListener('change', ()=>setTimeout(clear, 300), {once:true});
+  setTimeout(clear, 300000); /* 안전장치 — 어떤 이유로든 5분 뒤엔 해제 */
+  el.click();
+}
+function blobToB64(blob){ return new Promise((res,rej)=>{ const r=new FileReader(); r.onload=()=>res(String(r.result).split(',')[1]); r.onerror=rej; r.readAsDataURL(blob); }); }
+/* 파일을 사용자에게 전달한다. 성공하면 어디로 갔는지 알리는 문구를, 사용자가 취소하면 null을 반환하고,
+   실패하면 throw 한다 — 호출부가 성공을 단정하지 않도록.
+   안드로이드 11+는 앱이 공용 문서 폴더에 직접 쓸 수 없다(Capacitor의 Directory.Documents 미지원).
+   그래서 앱 캐시에 쓴 뒤 공유 시트를 띄워 사용자가 저장 위치(드라이브·파일·메신저)를 고르게 한다. */
+async function dl(blob,name){
+  if(isNative()){
+    const FS = Capacitor.Plugins.Filesystem, SH = Capacitor.Plugins.Share;
+    if(!FS) throw new Error('파일 저장 기능을 쓸 수 없어요. 앱을 완전히 종료한 뒤 다시 열어 주세요.');
+    const b64 = await blobToB64(blob);
+    const w = await FS.writeFile({ path:name, data:b64, directory:'CACHE', recursive:true });
+    if(!SH) throw new Error('파일은 만들었지만 공유 기능을 쓸 수 없어 저장 위치를 고를 수 없어요.');
+    _nativeIO++;
+    try{
+      await SH.share({ title:name, url:w.uri, dialogTitle:'백업 파일을 저장할 곳 고르기' });
+    }catch(e){
+      if(/cancel/i.test(String((e&&e.message)||e))) return null; /* 사용자가 공유 시트를 닫음 */
+      throw e;
+    }finally{ _nativeIO--; }
+    return '고른 위치에 '+name;
+  }
+  const a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download=name; document.body.appendChild(a); a.click(); setTimeout(()=>{URL.revokeObjectURL(a.href); a.remove();},800);
+  return '다운로드 폴더에 '+name;
+}
+
+/* ---------- export modal ---------- */
+function openExportModal(){
+  const ov=document.createElement('div'); ov.className='overlay';
+  ov.innerHTML=`<div class="modal"><h3>워드로 내보내기 (A5)</h3>
+  <p>A5 크기의 워드(.docx) 문서를 만들어요. 인쇄해서 노트처럼 쓰거나 파일로 보관할 수 있어요.</p>
+  <p style="color:var(--warn)">⚠️ 내보낸 파일에는 입력한 민감정보가 그대로 담겨요. 보관에 주의하세요.</p>
+  <div class="btns">
+    <button class="bigbtn" data-mode="filled"><b>작성한 내용만</b><small>내용을 입력한 페이지만 담은 우리 집 기록 문서</small></button>
+    <button class="bigbtn" data-mode="all"><b>전체 양식 (빈칸 포함)</b><small>모든 페이지를 담아, 인쇄해서 손으로 채울 수 있는 양식</small></button>
+  </div>
+  <button class="close">닫기</button></div>`;
+  document.body.appendChild(ov);
+  ov.addEventListener('click',e=>{ if(e.target===ov) ov.remove(); });
+  ov.querySelector('.close').addEventListener('click',()=>ov.remove());
+  ov.querySelectorAll('.bigbtn').forEach(b=>b.addEventListener('click',async ()=>{
+    const mode=b.dataset.mode; ov.remove();
+    try{
+      const blob=buildDocx(mode);
+      const where=await dl(blob,'만일의노트_'+(mode==='all'?'빈양식_':'')+dstr()+'.docx');
+      toast(where ? '워드 파일을 만들었어요 — '+where : '워드 파일을 저장하지 않았어요.');
+    }catch(err){ console.error(err); await notify('워드 파일을 만들지 못했어요.\n\n'+((err&&err.message)||err), '내보내기 실패'); }
+  }));
+}
+
+/* ---------- docx generation (A5) ---------- */
+const X = s => String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+const FONT='<w:rFonts w:ascii="Malgun Gothic" w:hAnsi="Malgun Gothic" w:eastAsia="맑은 고딕" w:cs="Malgun Gothic"/>';
+function run(t,o){ o=o||{};
+  let rpr='<w:rPr>'+FONT;
+  if(o.b) rpr+='<w:b/>';
+  if(o.i) rpr+='<w:i/>';
+  if(o.color) rpr+=`<w:color w:val="${o.color}"/>`;
+  rpr+=`<w:sz w:val="${o.sz||20}"/><w:szCs w:val="${o.sz||20}"/></w:rPr>`;
+  const lines=String(t==null?'':t).split(/\r?\n/);
+  let inner='';
+  lines.forEach((ln,i)=>{ if(i>0) inner+='<w:br/>'; inner+=`<w:t xml:space="preserve">${X(ln)}</w:t>`; });
+  return `<w:r>${rpr}${inner}</w:r>`;
+}
+function par(runs,o){ o=o||{};
+  let ppr='<w:pPr>';
+  if(o.pageBreak) ppr+='<w:pageBreakBefore/>';
+  if(o.center) ppr+='<w:jc w:val="center"/>';
+  ppr+=`<w:spacing w:before="${o.before||0}" w:after="${o.after==null?80:o.after}" w:line="264" w:lineRule="auto"/>`;
+  if(o.border) ppr+='<w:pBdr><w:bottom w:val="single" w:sz="8" w:space="3" w:color="A9C4E8"/></w:pBdr>';
+  ppr+='</w:pPr>';
+  return `<w:p>${ppr}${Array.isArray(runs)?runs.join(''):runs}</w:p>`;
+}
+const CONTENT_W=6577;
+function tbl(cols, rows){ // rows: array of {cells:[{text,b,shade}], header}
+  const cw=Math.floor(CONTENT_W/cols);
+  let h=`<w:tbl><w:tblPr><w:tblW w:w="${CONTENT_W}" w:type="dxa"/><w:tblLayout w:type="fixed"/><w:tblBorders><w:top w:val="single" w:sz="4" w:color="BFD3EC"/><w:left w:val="single" w:sz="4" w:color="BFD3EC"/><w:bottom w:val="single" w:sz="4" w:color="BFD3EC"/><w:right w:val="single" w:sz="4" w:color="BFD3EC"/><w:insideH w:val="single" w:sz="4" w:color="BFD3EC"/><w:insideV w:val="single" w:sz="4" w:color="BFD3EC"/></w:tblBorders></w:tblPr><w:tblGrid>`;
+  for(let i=0;i<cols;i++) h+=`<w:gridCol w:w="${cw}"/>`;
+  h+='</w:tblGrid>';
+  for(const r of rows){
+    h+='<w:tr>';
+    if(r.header) h+='<w:trPr><w:tblHeader/></w:trPr>';
+    for(const c of r.cells){
+      h+=`<w:tc><w:tcPr><w:tcW w:w="${cw}" w:type="dxa"/>${c.shade?`<w:shd w:val="clear" w:fill="${c.shade}"/>`:''}<w:vAlign w:val="center"/></w:tcPr>`;
+      h+=par(run(c.text||'', {b:c.b, sz:c.b?17:18}), {after:20});
+      h+='</w:tc>';
+    }
+    h+='</w:tr>';
+  }
+  return h+'</w:tbl>'+par(run(''),{after:60});
+}
+const BLANK='＿＿＿＿＿＿＿＿';
+function fieldLine(label, v, mode){
+  const has=nonEmpty(v);
+  if(!has && mode==='filled') return '';
+  const vv = Array.isArray(v)? v.join(', ') : (has? v : BLANK);
+  return par([run(label+'  ',{b:true,sz:17,color:'5E7CA8'}), run(vv,{sz:20})],{after:60});
+}
+function buildDocx(mode){
+  let body='';
+  // ----- cover -----
+  body += par(run('',{}),{after:1200});
+  body += par(run('만일의 노트',{b:true,sz:56,color:'1D559C'}),{center:true,after:200});
+  body += par(run('우리 가족 안심 기록장',{sz:24,color:'5E7CA8'}),{center:true,after:600});
+  body += par(run('이 노트는 '+(data.owner||'_______')+' 의 기록입니다.',{sz:22}),{center:true,after:200});
+  body += par(run('작성일: '+new Date().toLocaleDateString('ko-KR'),{sz:18,color:'8A8378'}),{center:true,after:600});
+  body += par(run('혹시 모를 그날, 남겨진 가족이 헤매지 않도록\n나와 우리 집의 중요한 정보를 담았습니다.\n소중히, 안전한 곳에 보관해 주세요.',{sz:18,color:'5E7CA8'}),{center:true});
+  // ----- emergency card ----- (가장 급한 정보라 표지 다음 첫 장에 둔다)
+  const emVals = EMFIELDS.map(f=>({ f, v:data.values['emcard.'+f.id] }));
+  if(mode==='all' || emVals.some(x=>nonEmpty(x.v))){
+    body += par(run('응급 정보 요약',{b:true,sz:30,color:'1D559C'}),{pageBreak:true,after:120,border:true});
+    body += par(run('위급한 순간, 가족이나 구조자가 가장 먼저 봐야 할 정보입니다.',{sz:16,i:true,color:'8A8378'}),{after:160});
+    for(const {f,v} of emVals) body += fieldLine(f.label, v, mode);
+  }
+  // ----- index -----
+  const secsOut = SCHEMA.filter(sec=> mode==='all' || countPrefix(sec.id+'.')>0);
+  body += par(run('차례',{b:true,sz:30,color:'1D559C'}),{pageBreak:true,after:200,border:true});
+  secsOut.forEach((sec,i)=>{ body += par([run((i+1)+'.  ',{b:true,sz:20,color:'5E7CA8'}),run(sec.title,{sz:20})],{after:60}); });
+  // ----- sections -----
+  for(const sec of secsOut){
+    /* 앱 화면은 SVG 라인 아이콘이라, 내보낸 문서에 이모지를 넣으면 브랜드가 어긋난다 */
+    body += par(run(sec.title,{b:true,sz:30,color:'1D559C'}),{pageBreak:true,after:160,border:true});
+    for(const page of sec.pages){
+      const pfx=sec.id+'.'+page.id;
+      if(mode==='filled' && countPrefix(pfx+'.')===0) continue;
+      body += par(run(page.title,{b:true,sz:23}),{before:160,after:80});
+      if(page.note && mode==='all') body += par(run(page.note,{sz:16,i:true,color:'8A8378'}),{after:100});
+      if(page.repeat){
+        const list = (data.instances[pfx]||['i1']);
+        let no=0;
+        for(const iid of list){
+          const ipfx=pfx+'.'+iid;
+          if(mode==='filled' && countPrefix(ipfx+'.')===0) continue;
+          no++;
+          if(list.length>1 || mode==='all') body += par(run('◈ '+page.title+' '+no,{b:true,sz:19,color:'5E7CA8'}),{before:80,after:60});
+          body += groupsDocx(page.groups, ipfx, mode);
+        }
+        if(no===0 && mode==='all') body += groupsDocx(page.groups, pfx+'.i1', mode);
+      }else{
+        body += groupsDocx(page.groups, pfx, mode);
+      }
+    }
+  }
+  const doc = `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<w:document xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main">
+<w:body>${body}
+<w:sectPr><w:pgSz w:w="8391" w:h="11906"/><w:pgMar w:top="851" w:right="850" w:bottom="851" w:left="850" w:header="510" w:footer="510" w:gutter="0"/></w:sectPr>
+</w:body></w:document>`;
+  const styles = `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<w:styles xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main">
+<w:docDefaults><w:rPrDefault><w:rPr>${FONT}<w:sz w:val="20"/><w:szCs w:val="20"/></w:rPr></w:rPrDefault>
+<w:pPrDefault><w:pPr><w:spacing w:after="80" w:line="264" w:lineRule="auto"/></w:pPr></w:pPrDefault></w:docDefaults>
+</w:styles>`;
+  const ct = `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types"><Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/><Default Extension="xml" ContentType="application/xml"/><Override PartName="/word/document.xml" ContentType="application/vnd.openxmlformats-officedocument.wordprocessingml.document.main+xml"/><Override PartName="/word/styles.xml" ContentType="application/vnd.openxmlformats-officedocument.wordprocessingml.styles+xml"/></Types>`;
+  const rels = `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"><Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument" Target="word/document.xml"/></Relationships>`;
+  const drels = `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"><Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/styles" Target="styles.xml"/></Relationships>`;
+  return zip([
+    {name:'[Content_Types].xml', text:ct},
+    {name:'_rels/.rels', text:rels},
+    {name:'word/document.xml', text:doc},
+    {name:'word/_rels/document.xml.rels', text:drels},
+    {name:'word/styles.xml', text:styles}
+  ]);
+}
+function groupsDocx(groups, pfx, mode){
+  let h='';
+  groups.forEach(g=>{
+    const gpfx = g.table ? pfx+'.'+g.id : pfx;   // 필드는 페이지 접두사를 그대로 쓴다
+    if(g.table){
+      const cols=g.table.columns||[]; const presets=g.table.presets||[];
+      const nrows=presets.length+(g.table.rows||3)+extraRows(gpfx);
+      const rows=[{header:true, cells:cols.map(c=>({text:c,b:true,shade:'E7F0FB'}))}];
+      let any=false;
+      for(let r=0;r<nrows;r++){
+        const cells=[]; let rowHas=false;
+        for(let c=0;c<cols.length;c++){
+          let t='';
+          if(r<presets.length && c===0) t=presets[r];
+          else t=val(gpfx+'.t.'+r+'.'+c)||'';
+          if(c>0 && nonEmpty(t)) rowHas=true;
+          if(r>=presets.length && c===0 && nonEmpty(t)) rowHas=true;
+          cells.push({text:t});
+        }
+        if(mode==='filled' && !rowHas) continue;
+        any=true; rows.push({cells});
+      }
+      if(mode==='filled' && !any) return;
+      if(g.title) h += par(run(g.title,{b:true,sz:19,color:'1D559C'}),{before:100,after:60});
+      h += tbl(cols.length, rows);
+      return;
+    }
+    if(!g.fields) return;
+    let lines='';
+    for(const f of g.fields){
+      const v=val(gpfx+'.'+f.id);
+      if(f.type==='checks'){
+        const arr=Array.isArray(v)?v:[];
+        if(mode==='filled'){ if(arr.length) lines += fieldLine(f.label, arr.join(', '), mode); }
+        else{
+          lines += par(run(f.label,{b:true,sz:17,color:'5E7CA8'}),{after:40});
+          for(const o of (f.options||[])) lines += par(run((arr.includes(o)?'☑ ':'☐ ')+o,{sz:19}),{after:30});
+        }
+      }else{
+        lines += fieldLine(f.label, v, mode);
+      }
+    }
+    if(!lines) return;
+    if(g.title) h += par(run(g.title,{b:true,sz:19,color:'1D559C'}),{before:100,after:60});
+    h += lines;
+  });
+  return h;
+}
+
+/* ---------- minimal ZIP (stored) ---------- */
+const CRC_T=(()=>{ const t=new Uint32Array(256); for(let n=0;n<256;n++){ let c=n; for(let k=0;k<8;k++) c = (c&1)? (0xEDB88320 ^ (c>>>1)) : (c>>>1); t[n]=c>>>0; } return t; })();
+function crc32(u8){ let c=0xFFFFFFFF; for(let i=0;i<u8.length;i++) c = CRC_T[(c ^ u8[i]) & 0xFF] ^ (c>>>8); return (c ^ 0xFFFFFFFF)>>>0; }
+function zip(files){
+  const enc=new TextEncoder();
+  const parts=[]; const central=[]; let offset=0;
+  const dosTime=0x0000, dosDate=((2026-1980)<<9)|(7<<5)|19;
+  for(const f of files){
+    const nameB=enc.encode(f.name); const dataB=enc.encode(f.text);
+    const crc=crc32(dataB);
+    const lh=new DataView(new ArrayBuffer(30));
+    lh.setUint32(0,0x04034b50,true); lh.setUint16(4,20,true); lh.setUint16(6,0x0800,true); lh.setUint16(8,0,true);
+    lh.setUint16(10,dosTime,true); lh.setUint16(12,dosDate,true);
+    lh.setUint32(14,crc,true); lh.setUint32(18,dataB.length,true); lh.setUint32(22,dataB.length,true);
+    lh.setUint16(26,nameB.length,true); lh.setUint16(28,0,true);
+    parts.push(new Uint8Array(lh.buffer), nameB, dataB);
+    const ch=new DataView(new ArrayBuffer(46));
+    ch.setUint32(0,0x02014b50,true); ch.setUint16(4,20,true); ch.setUint16(6,20,true); ch.setUint16(8,0x0800,true); ch.setUint16(10,0,true);
+    ch.setUint16(12,dosTime,true); ch.setUint16(14,dosDate,true);
+    ch.setUint32(16,crc,true); ch.setUint32(20,dataB.length,true); ch.setUint32(24,dataB.length,true);
+    ch.setUint16(28,nameB.length,true);
+    ch.setUint32(42,offset,true);
+    central.push(new Uint8Array(ch.buffer), nameB);
+    offset += 30 + nameB.length + dataB.length;
+  }
+  let cdSize=0; central.forEach(p=>cdSize+=p.length);
+  const eo=new DataView(new ArrayBuffer(22));
+  eo.setUint32(0,0x06054b50,true); eo.setUint16(8,files.length,true); eo.setUint16(10,files.length,true);
+  eo.setUint32(12,cdSize,true); eo.setUint32(16,offset,true);
+  return new Blob([...parts, ...central, new Uint8Array(eo.buffer)], {type:'application/vnd.openxmlformats-officedocument.wordprocessingml.document'});
+}
+
+/* ---------- emergency card ---------- */
+const EMFIELDS = [
+  {id:'blood', label:'혈액형'},
+  {id:'meds', label:'복용 중인 약', wide:true},
+  {id:'allergy', label:'알레르기·지병', wide:true},
+  {id:'contact1', label:'비상연락처 1 (이름·관계·번호)', wide:true},
+  {id:'contact2', label:'비상연락처 2', wide:true},
+  {id:'hospital', label:'다니는 병원·주치의', wide:true},
+  {id:'note', label:'그 밖에 알릴 것', wide:true}
+];
+
+/* ---------- search ---------- */
+let _sIdx = null;
+function searchIndex(){
+  if(_sIdx) return _sIdx;
+  _sIdx = [];
+  for(const sec of SCHEMA){
+    for(const page of sec.pages){
+      const base = { sec:sec.id, page:page.id, path:`${sec.title} › ${page.title}` };
+      _sIdx.push({...base, text:(sec.title+' '+page.title).toLowerCase(), label:page.title});
+      for(const g of page.groups||[]){
+        if(g.title) _sIdx.push({...base, text:g.title.toLowerCase(), label:g.title});
+        for(const f of g.fields||[]) _sIdx.push({...base, text:f.label.toLowerCase(), label:f.label});
+        if(g.table){ for(const c of g.table.columns||[]) _sIdx.push({...base, text:c.toLowerCase(), label:c});
+          for(const p of g.table.presets||[]) _sIdx.push({...base, text:p.toLowerCase(), label:p}); }
+      }
+    }
+  }
+  return _sIdx;
+}
+/* 민감(자물쇠) 항목 판별 — "민감정보 가리기"가 켜졌을 때 검색 결과로 새어나가지 않게 한다.
+   값 키 형태: sec.page[.iid].fieldId  또는  sec.page[.iid].tN.t.row.col */
+let _sensSet = null;
+function sensitiveIds(){
+  if(_sensSet) return _sensSet;
+  _sensSet = new Set();
+  for(const sec of SCHEMA) for(const page of sec.pages||[]){
+    for(const g of page.groups||[]){
+      for(const f of g.fields||[]) if(f.sensitive) _sensSet.add(sec.id+'|'+page.id+'|'+f.id);
+      if(g.table && g.table.sensitive) _sensSet.add(sec.id+'|'+page.id+'| table');
+    }
+  }
+  return _sensSet;
+}
+function keyIsSensitive(k){
+  const p = k.split('.'); if(p.length<3) return false;
+  const S = sensitiveIds();
+  if(p[p.length-3]==='t') return S.has(p[0]+'|'+p[1]+'| table');
+  return S.has(p[0]+'|'+p[1]+'|'+p[p.length-1]);
+}
+function keyToPage(k){
+  const parts = k.split('.');
+  const sec = SCHEMA.find(s=>s.id===parts[0]); if(!sec) return null;
+  const page = sec.pages.find(p=>p.id===parts[1]); if(!page) return null;
+  return { sec:sec.id, page:page.id, path:`${sec.title} › ${page.title}` };
+}
+function bindSearch(){
+  const inp = document.getElementById('searchIn'); const res = document.getElementById('searchRes');
+  if(!inp) return;
+  let t=null;
+  inp.addEventListener('input', ()=>{ clearTimeout(t); t=setTimeout(()=>{
+    const q = inp.value.trim().toLowerCase();
+    if(q.length<1){ res.style.display='none'; res.innerHTML=''; return; }
+    const seen = new Set(); const out = [];
+    for(const e of searchIndex()){
+      if(out.length>=20) break;
+      if(e.text.includes(q)){ const kk=e.sec+'|'+e.page+'|'+e.label; if(seen.has(kk)) continue; seen.add(kk);
+        out.push(`<div class="ri" data-sec="${e.sec}" data-page="${e.page}"><div class="path">${esc(e.path)}</div><div class="val">${esc(e.label)}</div></div>`); }
+    }
+    for(const [k,v] of Object.entries(data.values)){
+      if(out.length>=30) break;
+      if(data.settings.hideSens && keyIsSensitive(k)) continue; /* 가리기가 켜져 있으면 값 검색에서 제외 */
+      const sv = Array.isArray(v)? v.join(', ') : String(v);
+      if(sv.toLowerCase().includes(q)){
+        const info = keyToPage(k); if(!info) continue;
+        const kk = info.sec+'|'+info.page+'|v'+sv; if(seen.has(kk)) continue; seen.add(kk);
+        out.push(`<div class="ri" data-sec="${info.sec}" data-page="${info.page}"><div class="path">${esc(info.path)}</div><div class="val">${esc(sv.slice(0,60))}</div></div>`);
+      }
+    }
+    res.innerHTML = out.length? out.join('') : `<div class="ri"><div class="val">검색 결과가 없어요</div></div>`;
+    res.style.display='block';
+    res.querySelectorAll('.ri[data-sec]').forEach(r=>r.addEventListener('click',()=>{
+      go({name:'section', sec:r.dataset.sec});
+      setTimeout(()=>{ const d=document.getElementById('pg-'+r.dataset.page); if(d){ d.open=true; d.scrollIntoView({block:'start'}); } },50);
+    }));
+  },200); });
+}
+
+/* ---------- PIN lock ---------- */
+const PIN_KEY = 'manil-note-pin';
+const PINFAIL_KEY = 'manil-note-pinfail';
+
+/*
+ * 연속으로 틀리면 잠깐씩 쉬게 한다 — 폰을 주운 사람이 4자리를 전부 넣어보는 걸 늦추려는 것.
+ *
+ * 지연만 준다. 횟수가 아무리 쌓여도 기록을 지우거나 영구히 잠그지 않는다.
+ * (예전에 해시 방식 불일치로 본인이 영영 못 들어가는 사고가 있었다 — 그 교훈이다.)
+ * 카운트는 localStorage에 둔다. 메모리에만 두면 앱을 껐다 켜서 그냥 우회한다.
+ */
+const PIN_DELAY_AFTER = 5;                 /* 이 횟수까지는 지연 없음 */
+const PIN_DELAY_MAX   = 5 * 60 * 1000;     /* 아무리 틀려도 5분을 넘기지 않는다 */
+function pinFailRead(){
+  /* until은 타임스탬프라 |0 으로 정수화하면 32비트를 넘겨 값이 망가진다 (Number로 읽을 것) */
+  try{ const o = JSON.parse(localStorage.getItem(PINFAIL_KEY) || '{}'); return {n: o.n|0, until: Number(o.until) || 0}; }
+  catch(e){ return {n:0, until:0}; }
+}
+/** 남은 대기 시간(ms). 0이면 지금 시도할 수 있다. */
+function pinWaitLeft(){
+  const {until} = pinFailRead();
+  /* 시계를 과거로 돌리면 until이 한참 뒤로 보인다 — 상한을 넘는 값은 무효로 본다 */
+  const left = until - Date.now();
+  return (left > 0 && left <= PIN_DELAY_MAX) ? left : 0;
+}
+function pinFailBump(){
+  const {n} = pinFailRead();
+  const next = n + 1;
+  const over = next - PIN_DELAY_AFTER;
+  const wait = over > 0 ? Math.min(30000 * Math.pow(2, over - 1), PIN_DELAY_MAX) : 0;
+  try{ localStorage.setItem(PINFAIL_KEY, JSON.stringify({n: next, until: wait ? Date.now() + wait : 0})); }catch(e){}
+  return wait;
+}
+function pinFailClear(){ try{ localStorage.removeItem(PINFAIL_KEY); }catch(e){} }
+
+/*
+ * 저장된 해시는 "자기가 어떤 방식으로 만들어졌는지"를 스스로 말해야 한다.
+ *
+ * 예전에는 pinHash() 하나가 crypto.subtle을 쓰다가 실패하면 조용히 FNV로 넘어갔다.
+ * 그래서 저장할 때와 확인할 때의 방식이 어긋나면 — 예를 들어 crypto.subtle이 없던
+ * 웹뷰에서 비밀번호를 정한 뒤 웹뷰가 업데이트되면 — 맞는 비밀번호를 넣어도 영영
+ * 열리지 않았다. 빠져나갈 길은 '비밀번호를 잊으셨나요?'뿐인데 그건 기록을 전부 지운다.
+ * 기록을 지키려고 만든 앱에서 잠금 때문에 기록을 잃는 것이 가장 나쁜 결말이다.
+ *
+ * SHA-256 결과는 64자리 hex, FNV 결과는 'f'로 시작하는 9자 이하라 서로 구분된다.
+ */
+async function pinHashSha(s){
+  const buf = await crypto.subtle.digest('SHA-256', new TextEncoder().encode('manil:'+s));
+  return [...new Uint8Array(buf)].map(b=>b.toString(16).padStart(2,'0')).join('');
+}
+function pinHashFnv(s){
+  let h=2166136261; const str='manil:'+s;
+  for(let i=0;i<str.length;i++){ h^=str.charCodeAt(i); h=Math.imul(h,16777619); }
+  return 'f'+(h>>>0).toString(16);
+}
+/** 새로 저장할 해시 — 되도록 SHA-256, 정말 못 쓸 때만 FNV */
+async function pinMake(s){
+  try{ return await pinHashSha(s); }catch(e){ return pinHashFnv(s); }
+}
+const PIN_SHA_RE = /^[0-9a-f]{64}$/;
+/**
+ * 저장된 값이 만들어진 방식 그대로 검증한다.
+ * 반환 'ok' 통과 / 'no' 비밀번호 불일치 / 'cannot' 이 기기에서 확인 자체가 불가
+ * ('cannot'을 '비밀번호가 달라요'로 뭉뚱그리면 사용자를 초기화로 몰아간다)
+ */
+async function pinVerify(input, stored){
+  if(!stored) return 'ok';
+  if(PIN_SHA_RE.test(stored)){
+    try{ return (await pinHashSha(input)) === stored ? 'ok' : 'no'; }
+    catch(e){ return 'cannot'; }
+  }
+  return pinHashFnv(input) === stored ? 'ok' : 'no';
+}
+/** 옛 FNV 해시로 잠금을 푼 경우, 같은 비밀번호를 SHA-256으로 조용히 옮겨 둔다 */
+async function pinUpgrade(input, stored){
+  if(!stored || PIN_SHA_RE.test(stored)) return;
+  try{ localStorage.setItem(PIN_KEY, await pinHashSha(input)); }catch(e){ /* 못 쓰면 그대로 둔다 */ }
+}
+function pinSet(){ return !!localStorage.getItem(PIN_KEY); }
+function showLock(){
+  const d = document.createElement('div'); d.id='lock';
+  d.innerHTML = `<div class="box"><svg width="36" height="36" viewBox="0 0 72 72" style="margin-bottom:4px"><polygon points="60,14 10,36 33,44" fill="#2565B4"></polygon><polygon points="60,14 33,44 40,60" fill="#1D559C"></polygon><polygon points="60,14 33,44 33,52 38,46" fill="#16437C"></polygon></svg><h2>만일의 노트</h2><p>잠금 비밀번호를 입력해 주세요</p>
+    <input type="password" inputmode="numeric" maxlength="8" id="lockIn" autocomplete="off">
+    <div class="err" id="lockErr"></div>
+    <button class="open" id="lockOpen">열기</button>
+    <button class="forgot" id="lockForgot">비밀번호를 잊으셨나요?</button></div>`;
+  document.body.appendChild(d);
+  const errEl = ()=>document.getElementById('lockErr');
+  const openBtn = ()=>document.getElementById('lockOpen');
+  let tick = null;
+  const stopTick = ()=>{ if(tick){ clearInterval(tick); tick=null; } };
+  /* 대기 중에는 열기 버튼을 잠그고 남은 시간을 세어 보여준다 */
+  const paintWait = ()=>{
+    const left = pinWaitLeft();
+    if(left <= 0){ stopTick(); openBtn().disabled=false; errEl().textContent='이제 다시 시도할 수 있어요.'; return; }
+    openBtn().disabled = true;
+    errEl().textContent = '너무 여러 번 틀렸어요. '+Math.ceil(left/1000)+'초 뒤에 다시 시도할 수 있어요.';
+  };
+  const startWait = ()=>{ paintWait(); stopTick(); tick = setInterval(paintWait, 1000); };
+  const tryOpen = async ()=>{
+    if(pinWaitLeft() > 0){ startWait(); return; }
+    const v = document.getElementById('lockIn').value;
+    const stored = localStorage.getItem(PIN_KEY);
+    const r = await pinVerify(v, stored);
+    if(r === 'ok'){ pinFailClear(); stopTick(); await pinUpgrade(v, stored); d.remove(); return; }
+    document.getElementById('lockIn').value='';
+    if(r === 'cannot'){
+      /* 기기가 확인을 못 하는 상황이지 사용자가 틀린 게 아니다 — 횟수에 세지 않는다 */
+      errEl().textContent = '이 기기에서는 비밀번호를 확인할 수 없어요. 앱을 최신으로 업데이트한 뒤 다시 시도해 주세요.';
+      return;
+    }
+    if(pinFailBump() > 0){ startWait(); return; }
+    errEl().textContent = '비밀번호가 달라요. 다시 입력해 주세요.';
+  };
+  document.getElementById('lockOpen').addEventListener('click', tryOpen);
+  document.getElementById('lockIn').addEventListener('keydown', e=>{ if(e.key==='Enter') tryOpen(); });
+  if(pinWaitLeft() > 0) startWait();  /* 앱을 껐다 켜도 대기는 이어진다 */
+  document.getElementById('lockForgot').addEventListener('click', async ()=>{
+    if(!await ask('비밀번호를 잊으신 경우, 안전을 위해 이 기기의 기록을 초기화해야 잠금을 풀 수 있어요.\n\n삭제하면 되돌릴 수 없으니, 먼저 백업 파일을 만드는 것을 권합니다.\n\n계속할까요?',
+      {title:'잠금 해제 불가', danger:true, okText:'계속'})) return;
+    /* 지우기 전에 백업을 만들 기회를 반드시 준다 — 여기서 실패하면 되돌릴 방법이 없다 */
+    if(await ask('먼저 지금 기록을 백업 파일로 저장할까요?\n\n저장할 곳을 고를 수 있어요. 나중에 이 파일로 되살릴 수 있습니다.',
+      {title:'백업 먼저', okText:'백업하기', cancelText:'건너뛰기'})){
+      try{
+        const blob=new Blob([JSON.stringify(backupPayload(),null,1)],{type:'application/json'});
+        const where=await dl(blob, '만일의노트_백업_'+dstr()+'.json');
+        if(!where){ await notify('백업을 저장하지 않았어요. 초기화를 취소했습니다.\n\n다시 시도하거나, 백업 없이 진행하려면 한 번 더 시도해 주세요.', '초기화 취소'); return; }
+        await notify('백업했어요 — '+where+'\n\n이제 초기화를 진행합니다.', '백업 완료');
+      }catch(e){
+        console.error('pre-wipe backup fail', e);
+        await notify('백업에 실패해서 초기화를 취소했어요.\n\n'+((e&&e.message)||e), '초기화 취소'); return;
+      }
+    }
+    if(await ask('마지막 확인이에요. 이 기기의 기록이 모두 삭제됩니다. 계속할까요?', {title:'모든 기록 삭제', danger:true, okText:'삭제'})){
+      localStorage.removeItem(LS_KEY); localStorage.removeItem(PIN_KEY); localStorage.removeItem(AI_KEY); pinFailClear();
+      location.reload();
+    }
+  });
+  setTimeout(()=>document.getElementById('lockIn').focus(),100);
+}
+
+/* ---------- settings modal (lock + AI) ---------- */
+const AI_KEY = 'manil-note-ai';
+/* 지원 모델. 여기 없는 값(구버전 저장분·은퇴 모델)은 아래에서 자동 치환한다 */
+const CLAUDE_MODELS = ['claude-opus-5','claude-sonnet-5'];
+function aiCfg(){ try{ const c = JSON.parse(localStorage.getItem(AI_KEY))||{};
+    if(c.model && !CLAUDE_MODELS.includes(c.model)) c.model = /haiku|sonnet/.test(c.model) ? 'claude-sonnet-5' : 'claude-opus-5';
+    return c; }catch(e){ return {}; } }
+function aiSave(c){ localStorage.setItem(AI_KEY, JSON.stringify(c)); }
+document.getElementById('btnSet').addEventListener('click', ()=>{
+  const cfg = aiCfg();
+  const ov = document.createElement('div'); ov.className='overlay';
+  ov.innerHTML = `<div class="modal wide"><h3>설정</h3>
+  <div class="set-sec"><h4>문서·백업</h4>
+    <div class="btnrow"><button class="primary" id="setExport">워드로 내보내기 (A5)</button></div>
+    <div class="btnrow"><button id="setBackup">백업 저장</button><button id="setRestore">백업 불러오기</button></div>
+    <p>백업 파일(JSON)로 다른 폰이나 PC 버전과 기록을 옮길 수 있어요.</p>
+  </div>
+  <div class="set-sec"><h4>화면</h4>
+    <select id="themeSel">
+      <option value="auto" ${!data.settings.theme?'selected':''}>테마: 기기 설정 따르기</option>
+      <option value="light" ${data.settings.theme==='light'?'selected':''}>테마: 밝게 (라이트)</option>
+      <option value="dark" ${data.settings.theme==='dark'?'selected':''}>테마: 어둡게 (다크)</option>
+    </select>
+    <div class="btnrow"><button id="sensBtn">민감정보 가리기: ${data.settings.hideSens?'켜짐':'꺼짐'}</button></div>
+    <p>가리기를 켜면 비밀번호류 입력값이 화면에서 점(●)으로 표시돼요. 입력칸을 누르면 잠시 보입니다.</p>
+  </div>
+  <div class="set-sec"><h4>앱 잠금</h4>
+    <p>앱을 열 때 숫자 비밀번호를 물어봐요. 현재: <b>${pinSet()?'사용 중':'사용 안 함'}</b></p>
+    ${pinSet()?'<input type="password" inputmode="numeric" maxlength="8" id="pinCur" placeholder="현재 비밀번호" autocomplete="current-password">':''}
+    <input type="password" inputmode="numeric" maxlength="8" id="pinNew" placeholder="새 비밀번호 (숫자 4~8자리)" autocomplete="new-password">
+    <div class="btnrow"><button class="primary" id="pinSetBtn">${pinSet()?'비밀번호 변경':'잠금 켜기'}</button>${pinSet()?'<button id="pinOffBtn">잠금 끄기</button>':''}</div>
+    <p style="color:var(--ink3)">간단한 화면 잠금이에요. 완전한 암호화는 아니니, 중요한 기기 잠금(폰 비밀번호)도 함께 사용하세요.</p>
+  </div>
+  <div class="set-sec"><h4>AI 도우미</h4>
+    <p>API 키를 넣으면 <b>편지 다듬기</b>, <b>안내 도우미</b>, <b>사진으로 채우기</b>를 쓸 수 있어요. 둘 중 하나만 넣어도 돼요.</p>
+    <p>• <b>제미나이</b> 키만: 제미나이 사용 — 무료 사용량 제공 (발급: aistudio.google.com)<br>
+    • <b>클로드</b> 키만: 클로드 사용 — 사용한 만큼 과금 (발급: console.anthropic.com)<br>
+    • <b>둘 다</b>: 평소엔 제미나이(무료)를 쓰고, 무료 한도가 차면 클로드로 자동 전환</p>
+    <input type="password" id="gKeyIn" placeholder="제미나이 API 키 (AQ... 또는 AIza...)" value="${esc(cfg.gkey||'')}">
+    <input type="password" id="aiKeyIn" placeholder="클로드 API 키 (sk-ant-...)" value="${esc(cfg.key||'')}">
+    <select id="aiModelIn">
+      <option value="claude-opus-5" ${(!cfg.model||cfg.model==='claude-opus-5')?'selected':''}>클로드 모델: 기본 — 똑똑함 (Opus 5)</option>
+      <option value="claude-sonnet-5" ${cfg.model==='claude-sonnet-5'?'selected':''}>클로드 모델: 절약 — 빠르고 저렴 (Sonnet 5)</option>
+    </select>
+    <div class="btnrow"><button class="primary" id="aiSaveBtn">저장</button><button id="aiOffBtn">키 모두 삭제</button></div>
+    <p style="color:var(--warn)">⚠️ AI 기능을 쓸 때는 해당 내용이 AI 서버(구글 또는 Anthropic)로 전송돼요. 주민등록번호·비밀번호 같은 민감정보는 AI에 보내지 마세요. 그 외 모든 기록은 기기 안에만 저장됩니다.</p>
+  </div>
+  <div class="set-sec"><h4>이 앱</h4>
+    <p>만일의 노트 버전 <b>${esc(APP_VERSION)}</b></p>
+    <p>모든 기록은 이 기기 안에만 저장돼요. 앱을 삭제하면 기록도 함께 지워집니다.</p>
+    <div class="btnrow"><button id="wipeBtn">이 기기의 기록 모두 지우기</button></div>
+  </div>
+  <button class="close">닫기</button></div>`;
+  document.body.appendChild(ov);
+  ov.addEventListener('click',e=>{ if(e.target===ov) ov.remove(); });
+  ov.querySelector('.close').addEventListener('click',()=>ov.remove());
+  ov.querySelector('#setExport').addEventListener('click', ()=>{ ov.remove(); openExportModal(); });
+  ov.querySelector('#setBackup').addEventListener('click', doBackup);
+  ov.querySelector('#setRestore').addEventListener('click', doRestore);
+  ov.querySelector('#themeSel').addEventListener('change', e=>{
+    data.settings.theme = e.target.value==='auto' ? null : e.target.value;
+    save(); applyTheme();
+  });
+  ov.querySelector('#sensBtn').addEventListener('click', ()=>{
+    data.settings.hideSens = !data.settings.hideSens; save(); applySens();
+    ov.querySelector('#sensBtn').textContent = '민감정보 가리기: ' + (data.settings.hideSens?'켜짐':'꺼짐');
+  });
+  /* 이미 잠금을 쓰고 있으면 현재 비밀번호를 먼저 확인한다 */
+  async function curPinOk(){
+    if(!pinSet()) return true;
+    const cur = (ov.querySelector('#pinCur')||{value:''}).value.trim();
+    if(!cur){ await notify('현재 비밀번호를 입력해 주세요.'); return false; }
+    const stored = localStorage.getItem(PIN_KEY);
+    const r = await pinVerify(cur, stored);
+    if(r === 'cannot'){ await notify('이 기기에서는 비밀번호를 확인할 수 없어요.\n\n앱을 최신으로 업데이트한 뒤 다시 시도해 주세요.'); return false; }
+    if(r !== 'ok'){ await notify('현재 비밀번호가 달라요.'); return false; }
+    await pinUpgrade(cur, stored);
+    pinFailClear();  /* 본인 확인이 끝났으니 쌓인 실패 대기도 푼다 */
+    return true;
+  }
+  ov.querySelector('#pinSetBtn').addEventListener('click', async ()=>{
+    const v = ov.querySelector('#pinNew').value.trim();
+    if(!/^\d{4,8}$/.test(v)){ await notify('새 비밀번호를 숫자 4~8자리로 입력해 주세요.'); return; }
+    if(!await curPinOk()) return;
+    localStorage.setItem(PIN_KEY, await pinMake(v));
+    toast('앱 잠금이 설정되었어요.'); ov.remove();
+  });
+  const off = ov.querySelector('#pinOffBtn');
+  if(off) off.addEventListener('click', async ()=>{
+    if(!await curPinOk()) return;
+    if(await ask('앱 잠금을 끌까요?', {okText:'끄기'})){ localStorage.removeItem(PIN_KEY); pinFailClear(); toast('앱 잠금을 껐어요.'); ov.remove(); }
+  });
+  ov.querySelector('#aiSaveBtn').addEventListener('click', async ()=>{
+    const key = ov.querySelector('#aiKeyIn').value.trim();
+    const gkey = ov.querySelector('#gKeyIn').value.trim();
+    if(!key && !gkey){ await notify('제미나이 또는 클로드 API 키 중 하나는 입력해 주세요.'); return; }
+    aiSave({ key, gkey, model: ov.querySelector('#aiModelIn').value });
+    toast('AI 설정을 저장했어요.'); ov.remove();
+  });
+  ov.querySelector('#aiOffBtn').addEventListener('click', ()=>{ localStorage.removeItem(AI_KEY); toast('AI 키를 모두 삭제했어요.'); ov.remove(); });
+  ov.querySelector('#wipeBtn').addEventListener('click', async ()=>{
+    if(!await ask('이 기기에 저장된 모든 기록을 지울까요?\n\n되돌릴 수 없어요. 먼저 백업 파일을 만드는 것을 권합니다.',
+      {title:'모든 기록 삭제', danger:true, okText:'계속'})) return;
+    if(await ask('먼저 지금 기록을 백업 파일로 저장할까요?', {title:'백업 먼저', okText:'백업하기', cancelText:'건너뛰기'})){
+      try{
+        const blob=new Blob([JSON.stringify(backupPayload(),null,1)],{type:'application/json'});
+        const where=await dl(blob, '만일의노트_백업_'+dstr()+'.json');
+        if(!where){ await notify('백업을 저장하지 않았어요. 삭제를 취소했습니다.', '삭제 취소'); return; }
+        await notify('백업했어요 — '+where, '백업 완료');
+      }catch(e){ console.error(e); await notify('백업에 실패해서 삭제를 취소했어요.\n\n'+((e&&e.message)||e), '삭제 취소'); return; }
+    }
+    if(!await ask('마지막 확인이에요. 14개 영역의 모든 기록이 삭제됩니다. 계속할까요?', {title:'모든 기록 삭제', danger:true, okText:'삭제'})) return;
+    localStorage.removeItem(LS_KEY); localStorage.removeItem(PIN_KEY); localStorage.removeItem(AI_KEY);
+    location.reload();
+  });
+});
+
+/* ---------- AI core (Gemini + Claude, auto fallback) ---------- */
+async function httpPost(url, headers, bodyObj){
+  if(isNative() && Capacitor.Plugins && Capacitor.Plugins.CapacitorHttp){
+    try{
+      const r = await Capacitor.Plugins.CapacitorHttp.post({ url, headers, data: bodyObj });
+      const j = (typeof r.data==='string') ? JSON.parse(r.data) : (r.data||{});
+      return { status: r.status, json: j };
+    }catch(e){ /* fall through to fetch */ }
+  }
+  let r;
+  try{ r = await fetch(url, { method:'POST', headers, body: JSON.stringify(bodyObj) }); }
+  catch(e){ throw new Error('인터넷 연결을 확인해 주세요. (AI 기능은 온라인에서만 동작해요)'); }
+  const j = await r.json().catch(()=>({}));
+  return { status: r.status, json: j };
+}
+function claudeErr(status, j){
+  const t = j && j.error && j.error.type;
+  if(status===401) return '클로드 API 키가 올바르지 않아요. 설정에서 키를 확인해 주세요.';
+  if(status===429) return '클로드 요청이 많아 잠시 막혔어요. 1분 뒤에 다시 시도해 주세요.';
+  if(status===400 && t==='invalid_request_error') return '요청에 문제가 있어요: '+((j.error&&j.error.message)||'');
+  if(status>=500 || t==='overloaded_error') return 'AI 서버가 혼잡해요. 잠시 후 다시 시도해 주세요.';
+  return '클로드 호출에 실패했어요 ('+status+')';
+}
+/* message content: 문자열 또는 [{text:'...'}, {img:{mime,data}}] 배열 (사진 인식용) */
+function claudeContent(c){
+  if(typeof c==='string') return c;
+  return c.map(p=> p.img ? {type:'image', source:{type:'base64', media_type:p.img.mime, data:p.img.data}} : {type:'text', text:p.text});
+}
+function geminiParts(c){
+  if(typeof c==='string') return [{text:c}];
+  return c.map(p=> p.img ? {inline_data:{mime_type:p.img.mime, data:p.img.data}} : {text:p.text});
+}
+async function callClaude(system, messages){
+  const cfg = aiCfg();
+  /* max_tokens는 생각+답변 합산 상한이라, effort를 medium으로 두어 답변 분량을 확보한다 */
+  const body = { model: cfg.model||'claude-opus-5', max_tokens: 16000,
+    thinking:{type:'adaptive'}, output_config:{effort:'medium'}, system,
+    messages: messages.map(m=>({role:m.role, content:claudeContent(m.content)})) };
+  const { status, json } = await httpPost('https://api.anthropic.com/v1/messages',
+    { 'content-type':'application/json', 'x-api-key':cfg.key, 'anthropic-version':'2023-06-01', 'anthropic-dangerous-direct-browser-access':'true' }, body);
+  if(status>=400) throw new Error(claudeErr(status, json));
+  if(json.stop_reason==='refusal') throw new Error('안전상의 이유로 이 요청에는 답할 수 없어요. 내용을 바꿔 다시 시도해 주세요.');
+  return (json.content||[]).filter(b=>b.type==='text').map(b=>b.text).join('\n').trim();
+}
+const GEM_MODELS = ['gemini-3.5-flash','gemini-2.5-flash','gemini-flash-latest'];
+async function callGemini(system, messages){
+  const cfg = aiCfg();
+  let lastErr = null;
+  for(const model of GEM_MODELS){
+    const body = { systemInstruction:{ parts:[{ text: system }] },
+      contents: messages.map(m=>({ role: m.role==='assistant'?'model':'user', parts: geminiParts(m.content) })),
+      generationConfig:{ maxOutputTokens: 8192 } };
+    const { status, json } = await httpPost('https://generativelanguage.googleapis.com/v1beta/models/'+model+':generateContent',
+      { 'content-type':'application/json', 'x-goog-api-key': cfg.gkey }, body);
+    if(status===404){ lastErr = new Error('제미나이 모델을 찾을 수 없어요.'); lastErr.quota = true; continue; }
+    if(status>=400){
+      const gs = (json.error && json.error.status) || '';
+      const gm = (json.error && json.error.message) || '';
+      const isQuota = status===429 || gs==='RESOURCE_EXHAUSTED' || status===503 || gs==='UNAVAILABLE';
+      if(isQuota){
+        // 모델별 무료 한도가 따로라서, 다음 제미나이 모델을 먼저 시도
+        lastErr = new Error('제미나이 무료 사용량을 다 썼거나 서버가 혼잡해요.');
+        lastErr.quota = true;
+        continue;
+      }
+      const e = new Error(
+        (status===400||status===403) && /key|credential|api/i.test(gm) ? '제미나이 API 키가 올바르지 않아요. 설정에서 확인해 주세요.' :
+        '제미나이 호출에 실패했어요 ('+status+') '+gm);
+      throw e;
+    }
+    const cand = json.candidates && json.candidates[0];
+    const txt = cand && cand.content && cand.content.parts ? cand.content.parts.map(p=>p.text||'').join('').trim() : '';
+    if(!txt){
+      const br = json.promptFeedback && json.promptFeedback.blockReason;
+      throw new Error(br ? '제미나이가 안전상의 이유로 답변을 거절했어요. 내용을 바꿔보세요.' : '제미나이가 빈 답변을 보냈어요. 다시 시도해 주세요.');
+    }
+    return txt;
+  }
+  throw (lastErr || new Error('제미나이 호출에 실패했어요.'));
+}
+async function aiCall(system, messages){
+  const cfg = aiCfg();
+  const hasG = !!cfg.gkey, hasC = !!cfg.key;
+  if(!hasG && !hasC){ const e = new Error('⚙️ 설정에서 제미나이 또는 클로드 API 키를 먼저 등록해 주세요.'); e.noKey = true; throw e; }
+  if(hasG){
+    try{ return await callGemini(system, messages); }
+    catch(e){
+      if(hasC && e.quota){ toast('제미나이 한도 도달 — 클로드로 자동 전환했어요'); return await callClaude(system, messages); }
+      throw e;
+    }
+  }
+  return await callClaude(system, messages);
+}
+
+/* ---------- AI photo fill (사진으로 채우기) ---------- */
+const PHOTO_SYS = `당신은 문서 사진에서 정보를 뽑아 정리하는 한국어 도우미입니다. 사용자가 올린 사진(보험 증권, 통장, 고지서, 명함, 안내문, 계약서 등)을 읽고, 주어진 항목 정의에 해당하는 값만 추출합니다.
+규칙:
+- 반드시 JSON 하나만 출력합니다. 설명이나 코드펜스, 다른 텍스트를 붙이지 않습니다.
+- 형식: {"values":{"항목k":"값", ...}, "tables":{"표k":[["열1값","열2값",...], ...]}}
+- 사진에서 분명히 읽을 수 있는 값만 넣습니다. 안 보이거나 불확실한 항목은 아예 빼세요. 추측 금지.
+- type이 date인 항목은 YYYY-MM-DD 형식으로 씁니다.
+- options가 있는 항목은 반드시 그 목록 중 하나만 고르고, 해당하는 것이 없으면 뺍니다. type이 checks인 항목은 목록에서 고른 값들의 배열로 씁니다.
+- 표(tables)는 주어진 columns 순서대로 각 행을 배열로 만듭니다. 해당 내용이 없으면 그 표는 뺍니다.
+- 전화번호·금액·번호는 사진에 적힌 그대로 옮깁니다.`;
+
+function pfResize(file){
+  return new Promise((res,rej)=>{
+    const url = URL.createObjectURL(file);
+    const img = new Image();
+    img.onload = ()=>{
+      try{
+        const MAX = 1568;
+        let w = img.naturalWidth, h = img.naturalHeight;
+        const sc = Math.min(1, MAX/Math.max(w,h));
+        w = Math.max(1, Math.round(w*sc)); h = Math.max(1, Math.round(h*sc));
+        const cv = document.createElement('canvas'); cv.width = w; cv.height = h;
+        cv.getContext('2d').drawImage(img, 0, 0, w, h);
+        URL.revokeObjectURL(url);
+        const dataUrl = cv.toDataURL('image/jpeg', 0.85);
+        res({ mime:'image/jpeg', data:dataUrl.split(',')[1], preview:dataUrl });
+      }catch(e){ URL.revokeObjectURL(url); rej(new Error('사진을 처리하지 못했어요. 다른 사진으로 시도해 주세요.')); }
+    };
+    img.onerror = ()=>{ URL.revokeObjectURL(url); rej(new Error('사진을 읽지 못했어요. 다른 사진으로 시도해 주세요.')); };
+    img.src = url;
+  });
+}
+
+function pfSpec(page){
+  const fields=[], tables=[];
+  page.groups.forEach(g=>{
+    if(g.table){ tables.push({ k:g.id, gid:g.id, title:g.title||'', tdef:g.table }); return; }
+    (g.fields||[]).forEach(f=>{
+      if(f.sensitive) return;
+      fields.push({ k:f.id, label:(g.title? g.title+' — ':'')+f.label, type:f.type||'text', options:f.options||null });
+    });
+  });
+  return { fields, tables };
+}
+
+function pfParse(txt){
+  let s = String(txt||'').trim().replace(/^```(?:json)?\s*/i,'').replace(/```\s*$/,'');
+  const a = s.indexOf('{'), b = s.lastIndexOf('}');
+  if(a<0 || b<=a) throw new Error('AI 응답을 이해하지 못했어요. 다시 시도해 주세요.');
+  try{ return JSON.parse(s.slice(a, b+1)); }
+  catch(e){ throw new Error('AI 응답을 이해하지 못했어요. 다시 시도해 주세요.'); }
+}
+
+/* repeat 페이지: 마지막 카드가 비어 있으면 거기에, 아니면 새 카드에 채움 */
+function pfTarget(sec,page){
+  if(!page.repeat) return { pfx: sec.id+'.'+page.id, isNew:false };
+  const key = sec.id+'.'+page.id, list = data.instances[key]||['i1'];
+  const last = list[list.length-1];
+  if(countPrefix(key+'.'+last+'.')===0) return { pfx:key+'.'+last, isNew:false };
+  return { pfx:null, isNew:true };
+}
+
+function pfApplyTable(pfx, t, rows){
+  const tpfx = pfx+'.'+t.gid;
+  const cols = (t.tdef.columns||[]).length, presets = t.tdef.presets||[], base = presets.length+(t.tdef.rows||3);
+  const rowEmpty = r=>{ for(let c=(r<presets.length?1:0); c<cols; c++){ if(nonEmpty(val(tpfx+'.t.'+r+'.'+c))) return false; } return true; };
+  let n=0;
+  for(const row of rows){
+    let r=-1;
+    const pi = presets.findIndex(p=>String(p).trim()===String(row[0]||'').trim());
+    if(pi>=0 && rowEmpty(pi)) r=pi;
+    if(r<0){ for(let i=presets.length; i<base+extraRows(tpfx); i++){ if(rowEmpty(i)){ r=i; break; } } }
+    if(r<0){ data.tableRows[tpfx]=(data.tableRows[tpfx]||0)+1; r=base+extraRows(tpfx)-1; }
+    for(let c=(r<presets.length?1:0); c<cols; c++){ if(nonEmpty(row[c])) setVal(tpfx+'.t.'+r+'.'+c, row[c]); }
+    n++;
+  }
+  return n;
+}
+
+function openPhotoFillModal(sec, page){
+  const spec = pfSpec(page);
+  /* 호출부가 동기 함수라 여기서만 기다리지 않는다 — 안내만 띄우고 바로 돌아간다 */
+  if(!spec.fields.length && !spec.tables.length){ notify('이 페이지에는 자동으로 채울 항목이 없어요.'); return; }
+  const photos=[];
+  const target = pfTarget(sec, page);
+  const ov = document.createElement('div'); ov.className='overlay';
+  ov.innerHTML = `<div class="modal wide"><h3>사진으로 채우기 — ${esc(page.title)}</h3>
+  <p style="font-size:13px;color:var(--ink2)">보험 증권·통장 표지·고지서·명함 같은 사진을 올리면 AI가 읽고 항목을 채워드려요. 최대 3장까지 올릴 수 있어요.</p>
+  <p style="font-size:12.5px;color:var(--warn)">⚠️ 사진은 AI 서버(구글/Anthropic)로 전송돼요. 주민등록번호처럼 민감한 부분이 보이면 가리고 찍어주세요. 🔒 민감정보 항목은 자동 입력에서 제외됩니다.</p>
+  <div class="pf-thumbs" id="pfThumbs"></div>
+  <div class="btns"><button class="bigbtn" id="pfPick"><b>사진 고르기 · 찍기</b><small>갤러리나 카메라에서 선택</small></button>
+  <button class="bigbtn" id="pfGo" style="display:none;border-color:var(--accent)"><b>AI로 읽기</b><small>10~30초 걸려요</small></button></div>
+  <input type="file" id="pfFile" accept="image/*" multiple style="display:none">
+  <div id="pfOut"></div>
+  <div class="disc" id="pfStatus"></div>
+  <button class="close">닫기</button></div>`;
+  document.body.appendChild(ov);
+  const $ = s=>ov.querySelector(s);
+  ov.addEventListener('click',e=>{ if(e.target===ov) ov.remove(); });
+  $('.close').addEventListener('click',()=>ov.remove());
+  const drawThumbs = ()=>{
+    $('#pfThumbs').innerHTML = photos.map((p,i)=>`<span class="pf-th"><img src="${p.preview}"><button class="pf-x" data-i="${i}">✕</button></span>`).join('');
+    $('#pfGo').style.display = photos.length ? '' : 'none';
+    $('#pfThumbs').querySelectorAll('.pf-x').forEach(b=>b.addEventListener('click',()=>{ photos.splice(+b.dataset.i,1); drawThumbs(); }));
+  };
+  $('#pfPick').addEventListener('click',()=>pickFile($('#pfFile')));
+  $('#pfFile').addEventListener('change', async e=>{
+    const files = [...e.target.files].slice(0, 3-photos.length);
+    e.target.value='';
+    for(const f of files){ try{ photos.push(await pfResize(f)); }catch(err){ await notify(err.message, '사진을 쓸 수 없어요'); } }
+    if(e.target.files && photos.length>=3) toast('사진은 최대 3장까지예요.');
+    drawThumbs();
+  });
+  $('#pfGo').addEventListener('click', async ()=>{
+    if(!photos.length) return;
+    const st = $('#pfStatus');
+    st.textContent = 'AI가 사진을 읽는 중이에요... (10~30초)';
+    $('#pfGo').disabled = true; $('#pfPick').disabled = true;
+    try{
+      const specForAI = { page: page.title,
+        fields: spec.fields.map(x=>({ k:x.k, label:x.label, type:x.type, ...(x.options?{options:x.options}:{}) })),
+        tables: spec.tables.map(x=>({ k:x.k, title:x.title, columns:x.tdef.columns||[], ...((x.tdef.presets||[]).length?{presets:x.tdef.presets}:{}) })) };
+      const content = [ ...photos.map(p=>({img:{mime:p.mime, data:p.data}})),
+        { text: '다음 항목 정의에 맞춰 사진에서 값을 추출해 JSON으로만 답하세요.\n'+JSON.stringify(specForAI) } ];
+      const txt = await aiCall(PHOTO_SYS, [{role:'user', content}]);
+      renderConfirm(pfParse(txt));
+      st.textContent='';
+    }catch(err){ st.textContent=''; await notify(err.message, '사진에서 읽지 못했어요'); }
+    $('#pfGo').disabled = false; $('#pfPick').disabled = false;
+  });
+  function renderConfirm(j){
+    const vals=[], jv=(j&&j.values)||{};
+    for(const it of spec.fields){
+      let v = jv[it.k]; if(v==null) continue;
+      if(it.type==='checks'){
+        const arr = (Array.isArray(v)?v:[v]).map(x=>String(x).trim()).filter(x=>(it.options||[]).includes(x));
+        if(!arr.length) continue; v=arr;
+      }else{
+        v = String(Array.isArray(v)?v.join(', '):v).trim(); if(!v) continue;
+        if((it.type==='select'||it.type==='radio') && it.options && !it.options.includes(v)){
+          const m = it.options.find(o=>v.includes(o)||o.includes(v)); if(!m) continue; v=m;
+        }
+      }
+      const old = target.pfx ? val(target.pfx+'.'+it.k) : null;
+      vals.push({ it, v, old: nonEmpty(old)?old:null });
+    }
+    const tbls=[], jt=(j&&j.tables)||{};
+    for(const t of spec.tables){
+      let rows = jt[t.k]; if(!Array.isArray(rows)) continue;
+      rows = rows.filter(r=>Array.isArray(r)&&r.some(c=>nonEmpty(c)))
+                 .map(r=>(t.tdef.columns||[]).map((_,c)=>String(r[c]==null?'':r[c]).trim()));
+      if(rows.length) tbls.push({ t, rows });
+    }
+    if(!vals.length && !tbls.length){
+      $('#pfOut').innerHTML = '<p style="color:var(--warn);font-size:13px">사진에서 이 페이지에 넣을 내용을 찾지 못했어요. 더 선명한 사진이나 다른 사진으로 시도해 보세요.</p>';
+      return;
+    }
+    let h = '<div class="gtitle">AI가 읽은 내용 — 확인하고 넣기</div>';
+    if(target.isNew) h += '<p style="font-size:12.5px;color:var(--ink2)">새 카드를 만들어 아래 내용을 넣어요.</p>';
+    h += vals.map((r,i)=>`<div class="pf-row"><input type="checkbox" data-pfv="${i}" ${r.old?'':'checked'}><span class="pf-lab">${esc(r.it.label)}</span><span class="pf-val">${
+      r.it.type==='textarea' ? `<textarea data-pfin="${i}" style="min-height:56px">${esc(Array.isArray(r.v)?r.v.join(', '):r.v)}</textarea>`
+                             : `<input type="text" data-pfin="${i}" value="${esc(Array.isArray(r.v)?r.v.join(', '):r.v)}">`
+    }${r.old?`<div class="pf-old">⚠️ 체크하면 기존 값을 덮어써요: ${esc(Array.isArray(r.old)?r.old.join(', '):r.old)}</div>`:''}</span></div>`).join('');
+    tbls.forEach((tb,ti)=>{
+      h += `<div class="pf-gt">📋 ${esc(tb.t.title||'표')}</div>`;
+      h += tb.rows.map((row,ri)=>`<div class="pf-row"><input type="checkbox" data-pft="${ti}.${ri}" checked><span class="pf-val" style="padding-top:3px;font-size:13px">${
+        esc((tb.t.tdef.columns||[]).map((c,ci)=>row[ci]?c+': '+row[ci]:'').filter(Boolean).join(' · '))
+      }</span></div>`).join('');
+    });
+    h += '<div class="btns" style="margin-top:10px"><button class="bigbtn" id="pfApply" style="border-color:var(--accent)"><b>선택한 내용 넣기</b><small>넣은 뒤에도 자유롭게 고칠 수 있어요</small></button></div>';
+    $('#pfOut').innerHTML = h;
+    $('#pfApply').addEventListener('click',async ()=>{
+      let pfx = target.pfx;
+      if(target.isNew){
+        const key = sec.id+'.'+page.id, list = data.instances[key]||['i1'];
+        let mx=0; list.forEach(id=>{ const n=parseInt(id.slice(1))||0; if(n>mx) mx=n; });
+        const nid='i'+(mx+1); list.push(nid); data.instances[key]=list; pfx=key+'.'+nid;
+      }
+      let n=0;
+      vals.forEach((r,i)=>{
+        const cb = $(`[data-pfv="${i}"]`); if(!cb||!cb.checked) return;
+        const inp = $(`[data-pfin="${i}"]`);
+        let v = inp ? inp.value : (Array.isArray(r.v)?r.v.join(', '):r.v);
+        if(r.it.type==='checks'){
+          v = String(v).split(',').map(x=>x.trim()).filter(x=>(r.it.options||[]).includes(x));
+          if(!v.length) return;
+        }else{
+          v = String(v).trim(); if(!v) return;
+          if((r.it.type==='select'||r.it.type==='radio') && r.it.options && !r.it.options.includes(v)) return;
+        }
+        setVal(pfx+'.'+r.it.k, v); n++;
+      });
+      tbls.forEach((tb,ti)=>{
+        const sel = tb.rows.filter((_,ri)=>{ const cb=$(`[data-pft="${ti}.${ri}"]`); return cb&&cb.checked; });
+        if(sel.length) n += pfApplyTable(pfx, tb.t, sel);
+      });
+      if(!n){ await notify('넣을 항목을 선택해 주세요.'); return; }
+      save();
+      ov.remove();
+      const openIds = [...app.querySelectorAll('details[open]')].map(d=>d.id);
+      render();
+      openIds.forEach(id=>{ const d=document.getElementById(id); if(d) d.open=true; });
+      const d2 = document.getElementById('pg-'+page.id); if(d2) d2.open=true;
+      toast(n+'개 항목을 채웠어요. 내용을 확인해 주세요.');
+    });
+  }
+}
+
+/* ---------- AI letter helper ---------- */
+const LETTER_SYS = `당신은 한국어 글쓰기 도우미입니다. 사용자가 사랑하는 사람에게 남기는 편지나 마지막 인사말을 쓰도록 돕습니다.
+사용자가 준 메모, 일화, 마음을 바탕으로 진심이 느껴지는 자연스러운 한국어 글을 씁니다.
+규칙: 과장되거나 상투적인 표현("하늘에서 지켜볼게" 남용 등)은 피하고, 사용자가 준 구체적인 일화와 단어를 최대한 살립니다. 지시된 말투와 길이를 따릅니다. 인삿말·본문·맺음말이 자연스럽게 이어지게 합니다. 편지 본문만 출력하고, 설명이나 머리말은 붙이지 않습니다.`;
+function openLetterModal(targetKey){
+  const cur = val(targetKey)||'';
+  const ov = document.createElement('div'); ov.className='overlay';
+  ov.innerHTML = `<div class="modal wide"><h3>AI로 글 다듬기</h3>
+  <p style="font-size:13px;color:var(--ink2)">전하고 싶은 마음이나 기억나는 일화를 편하게 적어주세요. AI가 편지 초안으로 다듬어 드려요. 마음에 들 때까지 다시 만들 수 있고, 마지막에 직접 고칠 수도 있어요.</p>
+  <label class="mlab">받는 사람 (예: 딸 지은이에게, 남편에게)</label>
+  <input id="ltTo" placeholder="비워두면 일반적인 인사로 시작해요">
+  <label class="mlab">전하고 싶은 마음 · 일화 메모</label>
+  <textarea id="ltMemo" style="min-height:110px" placeholder="예: 결혼식 때 손 잡아줘서 고마웠다 / 김치찌개 레시피는 냉장고에 붙여놨다 / 싸웠던 건 다 잊으라고...">${esc(cur)}</textarea>
+  <div class="mrow">
+    <div><label class="mlab">말투</label><select id="ltTone"><option>따뜻하고 다정하게</option><option>담담하고 차분하게</option><option>밝고 유쾌하게</option></select></div>
+    <div><label class="mlab">길이</label><select id="ltLen"><option>보통 (10문장 안팎)</option><option>짧게 (5문장 안팎)</option><option>길게 (20문장 안팎)</option></select></div>
+  </div>
+  <div class="btns"><button class="bigbtn" id="ltGo"><b>초안 만들기</b><small>AI가 편지 초안을 써드려요</small></button></div>
+  <div id="ltOut" style="display:none"><label class="mlab">AI 초안 (직접 고칠 수 있어요)</label>
+  <textarea id="ltResult" style="min-height:160px"></textarea>
+  <div class="btns" style="flex-direction:row"><button class="bigbtn" id="ltRetry" style="flex:1"><b>다시 만들기</b></button><button class="bigbtn" id="ltApply" style="flex:1;border-color:var(--accent)"><b>입력칸에 넣기</b></button></div></div>
+  <div class="disc" id="ltStatus"></div>
+  <button class="close">닫기</button></div>`;
+  document.body.appendChild(ov);
+  ov.addEventListener('click',e=>{ if(e.target===ov) ov.remove(); });
+  ov.querySelector('.close').addEventListener('click',()=>ov.remove());
+  const status = ov.querySelector('#ltStatus');
+  const gen = async ()=>{
+    const memo = ov.querySelector('#ltMemo').value.trim();
+    if(!memo){ await notify('전하고 싶은 마음을 한 줄이라도 적어주세요.'); return; }
+    status.textContent = 'AI가 편지를 쓰는 중이에요... (10~30초)';
+    ov.querySelector('#ltGo').disabled = true;
+    try{
+      const txt = await aiCall(LETTER_SYS, [{role:'user', content:
+        `받는 사람: ${ov.querySelector('#ltTo').value.trim()||'(지정 안 함)'}\n말투: ${ov.querySelector('#ltTone').value}\n길이: ${ov.querySelector('#ltLen').value}\n\n메모:\n${memo}`}]);
+      ov.querySelector('#ltResult').value = txt;
+      ov.querySelector('#ltOut').style.display='block';
+      status.textContent = '';
+    }catch(e){ status.textContent=''; await notify(e.message, 'AI 요청 실패'); }
+    ov.querySelector('#ltGo').disabled = false;
+  };
+  ov.querySelector('#ltGo').addEventListener('click', gen);
+  ov.querySelector('#ltRetry').addEventListener('click', gen);
+  ov.querySelector('#ltApply').addEventListener('click', async ()=>{
+    const txt = ov.querySelector('#ltResult').value;
+    /* 원문을 그냥 덮어쓰면 되돌릴 수 없다 — 내용이 있으면 아래에 원문을 남겨 둔다 */
+    const prev = String(val(targetKey)||'');
+    let next = txt;
+    if(prev.trim()){
+      if(!await ask('입력칸에 이미 쓰신 내용이 있어요.\n\n초안을 넣고, 원래 쓰신 글은 아래에 "원문 보관"으로 남겨 둘게요.',
+        {title:'이미 쓰신 글이 있어요', okText:'초안 넣기', cancelText:'그만두기'})) return;
+      next = txt + '\n\n----- 원문 보관 (필요 없으면 지우세요) -----\n' + prev;
+    }
+    setVal(targetKey, next);
+    const ta = app.querySelector(`textarea[data-key="${CSS.escape(targetKey)}"]`);
+    if(ta) ta.value = next;
+    toast(prev.trim() ? '초안을 넣었어요. 원문은 아래에 남겨 뒀습니다.' : '입력칸에 넣었어요. 자동 저장됩니다.');
+    ov.remove();
+  });
+}
+
+/* ---------- AI chat helper ---------- */
+const CHAT_SYS = `당신은 한국어 앱 '만일의 노트'(유사시를 대비해 가족을 위한 정보를 정리하는 기록장)의 안내 도우미입니다.
+전문 분야: 한국의 장례 절차(3일장, 상조, 화장/매장/수목장), 사망 후 행정 절차(사망신고, 안심상속 원스톱서비스, 상속포기·한정승인, 상속세), 유언장 작성 방법, 사전연명의료의향서, 장기기증 등록, 보험금 청구, 디지털 유산 정리 등.
+답변 규칙: 쉽고 따뜻한 한국어로, 간결하게. 절차는 단계별로. 기한이 있는 것(사망신고 1개월, 한정승인 3개월, 상속세 6개월 등)은 꼭 짚어줍니다. 법률·세무 판단이 필요하면 변호사·세무사 상담을 권합니다. 확실하지 않은 것은 확실하지 않다고 말합니다. 관련 내용을 앱의 해당 섹션에 기록해 두라고 자연스럽게 안내해도 좋습니다. 의료·정신적 위기 상담은 전문기관(129, 1393)을 안내합니다.`;
+let chatHist = [];
+/* 최근 20개만 유지하고, 전송 이력이 user로 시작하도록 맞춘다(두 API 모두 첫 메시지가 user여야 함) */
+function trimChat(){
+  if(chatHist.length>20) chatHist = chatHist.slice(-20);
+  while(chatHist.length && chatHist[0].role!=='user') chatHist.shift();
+}
+document.getElementById('btnChat').addEventListener('click', ()=>{
+  const ov = document.createElement('div'); ov.className='overlay';
+  ov.innerHTML = `<div class="modal wide"><h3>안내 도우미</h3>
+  <div class="chatbox"><div class="chatlog" id="chatLog"></div>
+  <div class="chatin"><textarea id="chatIn" placeholder="예: 사망신고는 어떻게 하나요? / 자필 유언장 요건이 뭐예요?"></textarea><button id="chatSend">보내기</button></div>
+  <div class="disc">AI 답변은 참고용이에요. 중요한 결정은 전문가와 상의하세요. 대화 내용은 설정된 AI 서버(구글/Anthropic)로 전송됩니다.</div></div>
+  <button class="close">닫기</button></div>`;
+  document.body.appendChild(ov);
+  ov.addEventListener('click',e=>{ if(e.target===ov) ov.remove(); });
+  ov.querySelector('.close').addEventListener('click',()=>ov.remove());
+  const log = ov.querySelector('#chatLog');
+  const draw = ()=>{ log.innerHTML = chatHist.map(m=>`<div class="bub ${m.role==='user'?'u':'a'}">${esc(m.content)}</div>`).join('') || `<div class="bub a">안녕하세요. 장례 준비, 상속 절차, 유언장 같은 궁금한 점을 물어보세요.</div>`; log.scrollTop=log.scrollHeight; };
+  draw();
+  const send = async ()=>{
+    const inp = ov.querySelector('#chatIn'); const q = inp.value.trim();
+    if(!q) return;
+    inp.value=''; chatHist.push({role:'user', content:q});
+    trimChat();
+    draw();
+    log.insertAdjacentHTML('beforeend','<div class="bub a load" id="chatLoad">생각하는 중...</div>'); log.scrollTop=log.scrollHeight;
+    ov.querySelector('#chatSend').disabled=true;
+    try{
+      /* err 표시된 앱 내부 오류 문구는 모델에 보내지 않는다 — 보내면 모델의 이전 답변으로 학습돼 대화가 오염된다 */
+      const a = await aiCall(CHAT_SYS, chatHist.filter(m=>!m.err).map(m=>({role:m.role, content:m.content})));
+      chatHist.push({role:'assistant', content:a});
+    }catch(e){
+      chatHist.push({role:'assistant', content:'⚠️ '+e.message, err:true});
+    }
+    trimChat();
+    ov.querySelector('#chatSend').disabled=false;
+    draw();
+  };
+  ov.querySelector('#chatSend').addEventListener('click', send);
+  ov.querySelector('#chatIn').addEventListener('keydown', e=>{ if(e.key==='Enter' && !e.shiftKey){ e.preventDefault(); send(); } });
+});
+
+/* ---------- android (capacitor) ---------- */
+function showExitConfirm(){
+  const ov = document.createElement('div'); ov.className='overlay';
+  ov.innerHTML = `<div class="modal" style="max-width:320px;text-align:center"><h3>앱을 종료할까요?</h3>
+  <p style="font-size:13px;color:var(--ink2)">작성한 내용은 모두 자동 저장되어 있어요.</p>
+  <div class="btns" style="flex-direction:row">
+  <button class="bigbtn" id="exitCancel" style="flex:1;text-align:center"><b>취소</b></button>
+  <button class="bigbtn" id="exitGo" style="flex:1;text-align:center;border-color:var(--danger);color:var(--danger)"><b>종료</b></button>
+  </div></div>`;
+  document.body.appendChild(ov);
+  ov.addEventListener('click', e=>{ if(e.target===ov) ov.remove(); });
+  ov.querySelector('#exitCancel').addEventListener('click', ()=>ov.remove());
+  ov.querySelector('#exitGo').addEventListener('click', ()=>{ try{ Capacitor.Plugins.App.exitApp(); }catch(e){ ov.remove(); } });
+}
+try{
+  if(isNative() && Capacitor.Plugins && Capacitor.Plugins.App){
+    Capacitor.Plugins.App.addListener('backButton', ()=>{
+      /* 잠금화면은 .overlay 가 아니고 z-index가 더 높다 — 가드가 없으면 보이지 않는 종료창이 뒤에 떠버린다 */
+      if(document.getElementById('lock')) return;
+      const ovs = document.querySelectorAll('.overlay');
+      if(ovs.length){ ovs[ovs.length-1].remove(); return; }
+      if(view.name==='section'){ go({name:'home'}); return; }
+      showExitConfirm();
+    });
+    /* 백그라운드에 다녀오면 다시 잠근다. 단, 공유 시트·사진 선택처럼 앱이 의도적으로 띄운
+       화면에서 돌아오는 경우( _nativeIO )와 짧은 전환(RELOCK_GRACE)은 제외한다. */
+    let _leftAt = 0;
+    Capacitor.Plugins.App.addListener('appStateChange', ({isActive})=>{
+      if(!isActive){ _leftAt = Date.now(); return; }
+      if(!pinSet() || document.getElementById('lock')) return;
+      if(_nativeIO > 0) return;
+      if(_leftAt && Date.now() - _leftAt > RELOCK_GRACE) showLock();
+    });
+  }
+}catch(e){ console.warn(e); }
+
+/* ---------- 웹(PWA) 전용 ---------- */
+if(!isNative()){
+  /* 오프라인 실행용 서비스 워커. file:// 로 열었거나 미지원 브라우저면 조용히 건너뛴다. */
+  if('serviceWorker' in navigator && /^https?:/.test(location.protocol)){
+    window.addEventListener('load', ()=>{ navigator.serviceWorker.register('sw.js').catch(e=>console.warn('sw', e)); });
+  }
+  /* 다른 앱에 다녀오면 다시 잠근다 — 네이티브의 appStateChange 와 같은 규칙(_nativeIO·RELOCK_GRACE). */
+  let _leftAt = 0;
+  document.addEventListener('visibilitychange', ()=>{
+    if(document.hidden){ _leftAt = Date.now(); return; }
+    if(!pinSet() || document.getElementById('lock')) return;
+    if(_nativeIO > 0) return;
+    if(_leftAt && Date.now() - _leftAt > RELOCK_GRACE) showLock();
+  });
+}
+
+/* ---------- boot ---------- */
+if(pinSet()) showLock();
+applyTheme();
+window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change',()=>{ if(!data.settings.theme) applyTheme(); });
+render();
+badge('');
+</script>
+</body>
+</html>

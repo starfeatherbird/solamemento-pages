@@ -1,0 +1,17 @@
+{
+  "name": "만일의 노트 — 우리 가족 안심 기록장",
+  "short_name": "만일의 노트",
+  "description": "만일의 상황에 대비해 가족에게 필요한 정보를 기기에만 기록해 두는 노트",
+  "lang": "ko",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#F8F4EB",
+  "theme_color": "#F8F4EB",
+  "icons": [
+    { "src": "icons/icon-192.png", "sizes": "192x192", "type": "image/png" },
+    { "src": "icons/icon-512.png", "sizes": "512x512", "type": "image/png" },
+    { "src": "icons/icon-512-maskable.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ]
+}
